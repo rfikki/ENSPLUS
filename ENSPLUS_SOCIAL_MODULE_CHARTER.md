@@ -78,3 +78,41 @@ Note: v1 is deliberately thin on-chain — a registry stub that (a) anchors the 
 
 ## Ratification path
 P-READ only → **T1 (Assembly)** per manifest spec §3 — the lowest bar in the system, as intended. Challenge-window focus areas for reviewers: the two-key activation design (2.3-b), the seed-set definition (2.4), and threat row T7's collusion residual.
+
+---
+
+## Dependency resilience (added 2026-07, ethid.org wind-down)
+
+ethid.org is winding down its hosted services (EFP's api.ethfollow.xyz, the
+Ethereum Identity Kit frontend, Grails). ENSPLUS treats EFP/EIK/Grails as
+OPTIONAL-WITH-FALLBACK, never as hard dependencies:
+
+- **EFP (trust graph).** EFP is an ONCHAIN protocol (List Registry + List
+  Records on Base, chain 8453); the follow data survives the API sunset. The
+  hosted indexer is replaced by `tools/efp_onchain.mjs`, which resolves follows
+  directly from the Base contracts (address -> primary list -> storage location
+  -> reduce list-ops -> following set). The trust graph needs only follows AMONG
+  the bounded, known anchored-member set, so O(members) cheap OUTBOUND reads
+  suffice — no global follower index, no hosted API. Decoders are unit-tested
+  against the EFP docs' own vectors (`efp_onchain.test.mjs`, 7/7). The social
+  module remains opt-in, two-key-activated, capped +25%, inactive until T2, and
+  never wired to governance without separate ratification — so even total loss
+  of EFP degrades only an optional enhancement, never the core.
+- **Ethereum Identity Kit.** Pure frontend display; no contract dependency.
+  Swappable for any ENS/EFP profile renderer or rolled from on-chain records.
+  DELIVERED: `tools/eik_profile.mjs` — an on-chain resolver (ENS primary name
+  via reverse + forward-verify, ENS text records, EFP following from
+  efp_onchain.mjs) and a PURE self-contained SVG card renderer (deterministic
+  address identicon; real avatar embeddable). All rendered fields are
+  XML-escaped — hostile ENS records cannot inject into the SVG (tested with an
+  injection payload; 8/8). No ethid.org library, no network fetch to render.
+- **Grails corpus.** One of three independent cross-check sources in the
+  derivation dry-run (BigQuery x Grails x ENS subgraph). The two on-chain-derived
+  sources stand alone; the curated Grails corpus is the human-vetted third check.
+  ACTION (time-sensitive): archive the Grails corpus + open-source repo before
+  sunset so the derivation retains its third source.
+
+Principle reaffirmed: ENSPLUS's core knows no external addresses; every external
+touchpoint is a swappable adapter or a sandboxed, ratified module. Third-party
+service sunsets cannot reach the covenant, the vaults, the governor, or the
+name-protection triad.
