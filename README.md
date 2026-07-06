@@ -1,7 +1,7 @@
 # ENSPLUS — Project README
 
 **Status:** Design phase complete-ish, pre-code · **Last updated:** 2026-07-04
-**Entity:** CollectibleTrust DAO, LLC · **Working title:** ENSPLUS
+**Entity:** · **Working title:** ENSPLUS
 
 ---
 
