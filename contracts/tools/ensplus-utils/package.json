@@ -1,0 +1,15 @@
+{
+  "name": "ensplus-utils",
+  "version": "0.1.0",
+  "description": "ENSPLUS SDK: read positions, resolve identity (ENS+EFP), compute L1-native reputation via the TrustOracle, and render profile cards — all from chain, no hosted API.",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./efp": "../efp_onchain.mjs",
+    "./profile": "../eik_profile.mjs",
+    "./trust": "../libtrust_mirror.mjs"
+  },
+  "peerDependencies": { "ethers": "^6" },
+  "license": "MIT"
+}
