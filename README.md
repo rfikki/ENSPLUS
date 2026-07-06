@@ -1,7 +1,7 @@
 # ENSPLUS — Project README
 
 **Status:** Design phase complete-ish, pre-code · **Last updated:** 2026-07-04
-**Entity:** UNKNOWN · **Working title:** ENSPLUS
+**Entity:** CollectibleTrust DAO, LLC · **Working title:** ENSPLUS
 
 ---
 
@@ -18,6 +18,7 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 
 | Document | Covers |
 |---|---|
+| `ENSPLUS_OVERVIEW.md` | **START HERE for the plain-language version**: TL;DR, mission/vision, the problem and the fix, complete feature catalog, honest guarantees, build status |
 | `ENSPLUS_ENSV2_MIGRATION_SPEC.md` | ENSv2 facts baseline, custody classes (U-721/W-1155, Mode A/B), adapter architecture, phase-by-phase rollout mapping, MigrationAdapter capability envelope, renewal impact (no-grace!), module impact matrix, watch list |
 | `ENSPLUS_AUTOPILOT_SPEC.md` | Participation tier ladder (T0–T3), Tier-0 autonomy table for all launch modules, keeper registry, Custodian Mode, Standing Orders rulebook (SO-1..10, SO-M1..M3), classification pipeline, consent architecture (Policy A/B) |
 | `ENSPLUS_THREAT_MODEL.md` | 14 adversaries, ~45 threats across 8 domains with strength classes (HARD/STRONG/ECONOMIC/POLITICAL/PROCEDURAL), invariants I1–I10 (audit scope), claims register (§11 — what marketing may say) |
@@ -79,4 +80,3 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 - ENS docs for v2 are WIP: every fact in the migration spec carries a re-verify-at-build obligation.
 - Renewal executor must use the wrapped-controller path (v1 desync bug) — encoded in D8; do not regress.
 - All labels are hostile input (SVG injection, homoglyphs); all names may be non-normalizable (legacy lane).
-
