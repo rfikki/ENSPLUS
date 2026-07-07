@@ -1,7 +1,7 @@
 # ENSPLUS — Constitutional Autopilot Specification
 ## Tier-0 Autonomy Table & Standing Orders Rulebook (Draft 1)
 
-**Status:** Design specification (pre-code) · **Date:** 2026-07-03
+**Status:** IMPLEMENTED — tier ladder T0–T3, commit-reveal, epochs (InternalGovernor); Standing Orders SO-1..10 + classification/challenges (StandingOrders); mirror/SO/abstain casting is now DIRECTIONAL (GovernorAdapter — the live ENS governor has no fractional counting). Per-holder Policy A/B accounting still a pre-audit decision. · **Date:** 2026-07-03 (status updated 2026-07-05)
 **Principle:** Operations by formula, governance by exception. The protocol must be complete, safe, and useful at zero participation, forever. Votes change the system; they are never required to run it.
 
 ---

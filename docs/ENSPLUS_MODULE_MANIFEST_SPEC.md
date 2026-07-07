@@ -1,6 +1,6 @@
 # ENSPLUS — Module Manifest & Charter Specification (Draft 1)
 
-**Status:** Design specification (pre-code) · **Date:** 2026-07-03
+**Status:** IMPLEMENTED — charter format + permission taxonomy + on-chain machine checks live in ModuleRegistry; RenewalPool and ParticipationCredits are real chartered modules (runtime P_CREDIT gate proven). · **Date:** 2026-07-03 (status updated 2026-07-05)
 **Role in the document set:** This is the keystone. The Migration Spec defines how ENSPLUS survives the outside world changing; the Autopilot Spec defines how it runs without anyone; the Threat Model defines what every guarantee is worth. The Manifest is the mechanism that forces every module — present and future — to answer to all three *before it can exist.*
 
 > Governing principle (Article VI/VII): a feature is not a deployment; a feature is a **ratified charter**. The ModuleRegistry refuses activation of any module whose manifest is incomplete, uncited, over-permissioned, or unchallenged. "Features cannot exist outside the constitution" is enforced here, structurally.

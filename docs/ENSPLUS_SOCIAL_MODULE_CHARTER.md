@@ -1,6 +1,6 @@
 # ENSPLUS Module Charter — `social` v1
 
-**Status:** Draft charter (pre-code) · **Date:** 2026-07-04
+**Status:** IMPLEMENTED (identity/trust core) — LibTrust + TrustOracle (L1-native, sybil-resistant, live), HumanAttestor (zkPassport), CitizenResolver (ensplus.* records). EFP/EIK/Grails reclassified optional-with-fallback (see resilience section); EFP read on-chain, trust no longer depends on it. · **Date:** 2026-07-04 (status updated 2026-07-05)
 **Format:** Complete instance of `ENSPLUS_MODULE_MANIFEST_SPEC.md` §2. Intended as the reference example of a minimal charter: read-only, pure Tier-0, zero custody surface. If the manifest pipeline can't ratify this one cleanly, the pipeline is broken.
 
 ---

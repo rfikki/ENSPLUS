@@ -1,6 +1,6 @@
 # ENSPLUS × ENSv2 — Migration & Continuity Specification
 
-**Status:** Design specification (pre-code) · **Date:** 2026-07-03
+**Status:** PARTIALLY IMPLEMENTED — NameVault carries v2Status + the born-empty, one-shot, elected-only migration slot (Article X). The MigrationAdapter (M1–M5) itself is Wave 3, deferred until ENSv2 contracts are final + live. · **Date:** 2026-07-03 (status updated 2026-07-05)
 **Scope:** Maps the published ENSv2 architecture and rollout plan against the ENSPLUS vault's custody position, defines the MigrationAdapter capability envelope, and assesses per-module impact.
 
 > Primary sources: ENS docs "ENSv2 Smart Contracts Overview" (docs.ens.domains/contracts/ensv2/overview, flagged work-in-progress), ENS Labs blog "A Deeper Dive into the ENSv2 Architecture" (Feb 20, 2026), ENS Labs Namechain cancellation announcement (Feb 2026), ENSv2 readiness guide (docs.ens.domains/web/ensv2-readiness), `ensdomains/contracts-v2` repo. Re-verify all facts against these sources at build time; ENSv2 docs are explicitly WIP pending final design and audits.
