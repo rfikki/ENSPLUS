@@ -1,7 +1,7 @@
 # ENSPLUS — Project README
 
-**Status:** Design phase complete-ish, pre-code · **Last updated:** 2026-07-04
-**Entity:** · **Working title:** ENSPLUS
+**Status:** Core code-complete for audit scope — 137/137 tests, 22 contracts (slices 1–14) · **Last updated:** 2026-07-05
+**Entity:** CollectibleTrust DAO, LLC · **Working title:** ENSPLUS
 
 ---
 
@@ -24,13 +24,17 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 | `ENSPLUS_THREAT_MODEL.md` | 14 adversaries, ~45 threats across 8 domains with strength classes (HARD/STRONG/ECONOMIC/POLITICAL/PROCEDURAL), invariants I1–I10 (audit scope), claims register (§11 — what marketing may say) |
 | `ENSPLUS_MODULE_MANIFEST_SPEC.md` | The charter format: lifecycle, schema (§2.1–2.8), permission taxonomy (P-READ..P-EXT + forfeiture set), tier-gated ratification, registry machine checks, renewal-pool worked example, four-document concordance |
 | `ENSPLUS_SOCIAL_MODULE_CHARTER.md` | First complete charter instance: social module v1 (EFP/EIK, P-READ only, pure Tier-0, two-key trust-score activation) |
-| `efp_trustgraph.mjs` | Runnable prototype: provenance-seeded trust scoring over live EFP data (`--demo` offline / `--live` crawl). Demo verifies: sybil rings and bought followers score 1.0x; cap ≤1.25x holds |
+| `ADOPTED_IMPROVEMENTS.md` | gwei-names benchmark: verdict on ownerless/robustness/features + what was adopted (HumanAttestor, SDK, gas snapshots, deterministic deploy) and deliberately deferred |
+| `PROJECT_CHECKLIST.md` | Finished (14 slices + tooling) vs deferred (post-audit) vs gating (genesis) — the live status board |
+| `tools/` | On-chain EFP reader (`efp_onchain.mjs`, no hosted API), EIK profile resolver+SVG renderer (`eik_profile.mjs`), LibTrust JS mirror, `ensplus-utils/` SDK, gas snapshot, deterministic deploy, adoption model, cross-fuzz. (The old `efp_trustgraph.mjs` API prototype is superseded by the on-chain reader after the ethid.org wind-down.) |
 
-## 3. Core architecture (one screen)
+## 3. Core architecture (one screen)  — ✅ = built & tested
 
-- **Immutable core:** TokenVault + NameVault (dual custody U-721/W-1155), InternalGovernor (quadratic + 2% caps + provenance weights + commit-reveal + vesting/snapshot), Covenants (vault-boundary outflow rules), ConstitutionRegistry (Layer-0 ENS constitution verbatim + Articles V–X), RevenueSplitter (hard-routed slices).
-- **Adapters (swappable, ratified):** Registrar / Governor / Resolution / Records / Migration (born empty, Article X only). Core never knows an ENS address.
-- **Module slots (charter-gated):** Renewal Pool (CR tiers Ember→Eternal, banked years), Sentinel/Watchtower, Sentinel Lock, Citizen 6551 + credits, Registry of Elders + Category Registry (algorithmic bits computed / historical bits Merkle-attested / curated bits TCR), Marketplace, Foundry, Social, Protocol Watch, hash-recovery bounties, Namehash Gallery.
+- **Immutable core ✅:** ENSPLUSVault + NameVault (dual custody U-721/W-1155), InternalGovernor (quadratic + caps + provenance + commit-reveal + vesting/snapshot), GovernorExecuted (execute-by-proposal, zero admin keys), ConstitutionRegistry, ModuleRegistry (on-chain machine checks), RevenueSplitter (hard-routed slices).
+- **Adapters (swappable, ratified):** GovernorAdapter ✅ (directional nominal casting — live ENS governor is GovernorCountingSimple, no fractional), VaultSteward ✅, Migration slot ✅ (born empty, Article X only). Core never knows an ENS address.
+- **Name layer ✅:** RenewalPool (CR tiers Ember→Eternal, banked years, first real charter), SentinelLock (transfer+unwrap timelocks/guardians/panic, I10), Watchtower (expiry escalation, alarms, resurrection anchor).
+- **Identity/trust ✅:** Citizen (soulbound + ERC-6551 account) + ParticipationCredits, AttestorRegistry (era/rank provenance), LibTrust + TrustOracle (L1-native sybil-resistant reputation), HumanAttestor (ownerless zkPassport proof-of-humanity), CitizenResolver (ENS resolver for `ensplus.*` civic records, recordVersion + ENSIP-10 + CCIP).
+- **Deferred to later, separately-audited waves:** Marketplace, Foundry, leasing, inheritance, curated-category TCR/guilds/bounties, Specimen Plate gallery, Protocol Watch, Wave-3 v2 migration kit.
 - **External voting composition:** mirror of live internal votes + Standing Orders for Policy-A silent weight + abstain for Policy-B; bloc mode only via Oracle flag + T3 supermajority. Below internal quorum: abstain.
 - **Governance modes:** Mirror (default) / Abstain (safety) / Bloc (constitutional emergency).
 
@@ -48,7 +52,11 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 | D8 | v1 renewals via the deployed UniversalRegistrarRenewalWithReferrer path (wrapped-controller, desync-safe), referrer=pool (self-funding bonus) | grails repo findings |
 | D9 | Per-owner position index in vault (O(1) wallet-scoped reads); no global enumeration on-chain; two-tier UX (RPC core / indexer convenience); proof shards on IPFS; deterministic client-side art rendering | scaling/UI discussion |
 | D10 | Art direction: Specimen Plate (names as typographic artifacts; banked-years stamps) for the Namehash Gallery; heraldry reserved as candidate for Citizen avatars; constellation as candidate animation layer | art discussion |
-| D11 | Trust-graph social scores: seed-rooted only, capped +25%, **inactive in governance until separate T2 activation vote** (two-key) | social charter |
+| D11 | Trust scores: seed-rooted, capped +25%, **inactive in governance until separate T2 activation** (two-key) | social charter |
+| D12 | GovernorAdapter casts DIRECTIONALLY (full weight one way) not proportionally — verified the live ENS governor uses GovernorCountingSimple with no fractional counting; mirror = mirror the internal DECISION, abstain below a confidence threshold | slice 5-rev, governor verification |
+| D13 | EFP/EIK/Grails are OPTIONAL-WITH-FALLBACK (ethid.org wind-down): EFP read on-chain from Base, and the trust signal rebuilt L1-native (LibTrust) from owned primitives, so no third-party liveness is load-bearing | ethid.org wind-down |
+| D14 | Proof-of-humanity via ownerless zkPassport HumanAttestor (one human ↔ one identity) feeds LibTrust as a sybil-proof bonus | gwei-names benchmark |
+| D15 | Audit scope is a TIGHT core (custody + governance + read-only identity); asset-moving features (marketplace, leasing, inheritance, v2 kit) ship in later separately-audited waves | pre-audit scoping |
 
 ## 5. External resources
 
@@ -57,21 +65,21 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 **Reuse (adopt):** `ensdomains/merkle-builder` (attestation trees) · `ensdomains/dao-proposal-monitor` (Protocol Watch intake) · `ensdomains/ens-test-env` (+ chai-matchers-viem, dappwright) · `ensdomains/ens-contracts` (all interfaces/artifacts) · deployed `UniversalRegistrarRenewalWithReferrer` `0xf55575Bd…` (verify current) · EIK `ethereum-identity-kit` npm.
 **Reuse (reference):** `ens-metadata-service` (SVG sanitization for hostile names) · `migration-scripts` (2017→2019 semantics) · ENS subgraph (derivation cross-check #3, indexer schema) · ENSRainbow (label healing) · `multi-delegate` (fractional delegation prior art) · `grailsmarket/backend`.
 **Data:** `grailsmarket/ens-categories` (MIT): category CSVs + prepunk rankings (79,720 rows, rank 1 = rilxxlir.eth) + club definitions.
-**EFP:** mainnet/Base/Optimism since Sept 2024; API `https://api.ethfollow.xyz/api/v1` (schema verified live 2026-07-04); lists = NFT + roles + records + tags; Primary List via Account Metadata; follows addresses (→ follow Citizen 6551 accounts = follow-the-name).
+**EFP (ethid.org winding down 2026-07):** protocol is ON-CHAIN and survives the API sunset — read directly from Base (List Registry `0x0E688f5DCa4a0a4729946ACbC44C792341714e08`, List Records `0x41Aa48Ef3c0446b46a5b1cc6337FF3d3716E2A33`, Account Metadata `0x5289fE5daBC021D02FDDf23d4a4DF96F4E0F17EF`) via `tools/efp_onchain.mjs`. Trust signal no longer depends on EFP at all — see LibTrust (L1-native). Grails corpus: archive before sunset.
 **Anchors:** auction registrar `0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef` · BaseRegistrar `0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85` · old registry `0x314159265dD8dbb310642f98f50C066173C1259b` · registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` (re-verify all at build).
 
 ## 6. Roadmap
 
-**Wave 1 (political layer, no ENSv2 dependency):** TokenVault, InternalGovernor, Covenants, ConstitutionRegistry + Oracle, Standing Orders engine, GovernorAdapter. Gate: audit.
-**Wave 2 (name layer):** NameVault, Renewal Pool, Sentinel/Watchtower/Lock, Citizen, Registry of Elders, Marketplace, Social, Gallery. Gate: audit + Phase-0 obligations (v2Status schema, UR targeting, empty adapter slots, per-owner index).
-**Wave 3 (v2 kit, shelf-ready):** MigrationAdapter, RegistrarAdapter v2, Covenant Registry + Citizen Resolver templates. Gate: ENSv2 contracts final + audited + live; ratified via Article X as the first great constitutional act.
+**Wave 1 (political layer) ✅ BUILT:** ENSPLUSVault, InternalGovernor, GovernorExecuted, ConstitutionRegistry, ModuleRegistry, StandingOrders, GovernorAdapter (directional), VaultSteward, AttestorRegistry. Gate: audit.
+**Wave 2 (name + identity layer) ✅ BUILT (core):** NameVault, RenewalPool, SentinelLock, Watchtower, Citizen + ParticipationCredits, LibTrust + TrustOracle, HumanAttestor, CitizenResolver. Deferred to later waves: Marketplace, Foundry, leasing, inheritance, Gallery. Gate: audit.
+**Wave 3 (v2 kit, shelf-ready):** MigrationAdapter, RegistrarAdapter v2, Covenant Registry. Gate: ENSv2 contracts final + audited + live; ratified via Article X as the first great constitutional act.
 
-**Immediate next tasks (pre-code):**
-1. **Prepunk derivation dry-run** — three-way diff (BigQuery events × Grails corpus × ENS subgraph), roots via merkle-builder; decides event basis / tie-break / cutoff semantics; emits proof shards; ~$10, ~4 days. ← *first empirical task*
-2. Constitutional text: Layer-0 verbatim + Articles V–X in ratifiable language.
-3. Red-team pass on SO classification gaps (threat S1) + aged-name acquisition-cost study (G2).
-4. Specimen Plate HTML testbed (koi-pond workflow: perfect in browser, port math on-chain).
-5. Legal review: entity/securities framing (utility-first), threat B7.
+**Immediate next tasks (pre-audit hardening):**
+1. Stateful invariant tests for custody-adjacent contracts (SentinelLock especially).
+2. Settle code-affecting decisions: per-holder Policy A/B accounting; capBps vs community size; raffle VRF-vs-blockhash; era/rank derivation freeze.
+3. **Prepunk derivation dry-run** — 3-way diff (BigQuery × Grails corpus × ENS subgraph); freezes era/rank; emits proof shards (~$10, ~4 days). ARCHIVE the Grails corpus before its sunset.
+4. Constitutional text: Layer-0 verbatim + Articles V–X in ratifiable language.
+5. Audit-scope document; then commission external audit(s) — the top gating item.
 
 ## 7. Standing cautions
 
@@ -80,3 +88,5 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 - ENS docs for v2 are WIP: every fact in the migration spec carries a re-verify-at-build obligation.
 - Renewal executor must use the wrapped-controller path (v1 desync bug) — encoded in D8; do not regress.
 - All labels are hostile input (SVG injection, homoglyphs); all names may be non-normalizable (legacy lane).
+- L1 gas is negligible now (sub-1 gwei, 2026) — reinforces the all-mainnet design; no L2 for ENSPLUS logic; build identity from owned L1 primitives.
+- Robustness gap vs benchmarks: ENSPLUS is thoroughly reasoned (threat model, invariants, cross-fuzz) but NOT YET audited or deployed. External audit + mainnet deploy is the top pre-launch item.

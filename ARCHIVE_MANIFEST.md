@@ -1,5 +1,5 @@
 # ENSPLUS — Complete Project Archive
-Generated: 2026-07-04 (updated: slice 13 — HumanAttestor + gwei-names hardening (SDK, gas snapshot, deploy)
+Generated: 2026-07-04 (updated: docs refreshed to current state (14 slices, 137 tests, tooling)
 
 ## Layout
 - `README.md` — project overview, decisions log D1–D11, roadmap. Start here.
@@ -31,15 +31,18 @@ Generated: 2026-07-04 (updated: slice 13 — HumanAttestor + gwei-names hardenin
 
   - Slice 13 (HumanAttestor + hardening): ownerless zkPassport proof-of-humanity feeding LibTrust; ensplus-utils SDK; gas snapshot; deterministic deploy blueprint; ADOPTED_IMPROVEMENTS.md — 129/129 passing
 
+  - Slice 14 (CitizenResolver): ownerless read-only ENS resolver exposing live civic records; recordVersion clearing; ENSIP-10 + CCIP-read; provenance-safe on transfer — 137/137 passing
+
 ## Checksums (sha256)
-4cdf93e96a1596efd10f3b24fbe1901fb8832ef2206089438d38849906f9637a  PROJECT_CHECKLIST.md
-5ccbca948a65b96c0fdb18734c2278fd58a88c6bbea6bb91b5c01154159a71a6  README.md
+66a6246cd98d38a3e91b0a516189f3505df9d535ad132bacef64254ad8185f35  PROJECT_CHECKLIST.md
+672987e245e6490fb27fe2638756629f84a7f7996c8e8612b76ddda99e643582  README.md
 825fe31b4e8d644078dffac797d3f8b9aef391cff83b27e546deaa750a4a6017  contracts/.gas-snapshot
 d7ea9bd941b7b14bce3d41de8ec543dec73637cd4c523135612e11bfb104db32  contracts/SLICE1.md
 91ed16a9af900bb0ae1888b909b1ce21bca8988192987413dde59010634c4893  contracts/SLICE10.md
 0ba4a37318c996761f116642bfb82c33376bcb001b33028268e87b15d1c25774  contracts/SLICE11.md
 06984f6d70025f6f6821380bf3784d7eb7503e0eefaa355cb76d02a55108731a  contracts/SLICE12.md
 a3f18a8e86130d42764d7ba042888300eef518e7276b982cbd2d7c2537d83200  contracts/SLICE13.md
+c14a1e9175dcf8e4c6a22744e82bc918b815918a162584d8d7160f6b476deaaa  contracts/SLICE14.md
 4c3748a3074df51b538e925a40f188cf8fe25dd473e752ef7ed3711b3c735653  contracts/SLICE2.md
 94f4eb0f2dc970b9cfdf70433e821c1c87c4f042008bf5c28e6c07ee44f217dd  contracts/SLICE3.md
 ba64714d676ff92dccfc2d976bbf0271f3b22a2b2ab4380aafe6e008bcb42c2e  contracts/SLICE4.md
@@ -50,6 +53,7 @@ c47ed371d2771027c7dc24a6a1d1e9810b259bad293832d08f78be423f2f0b75  contracts/SLIC
 53960c6f4eee73eb1856a0ff23b417c6fcd9c728316ec9a06922b53a606a7d42  contracts/SLICE9.md
 1a1a8d0c3a1d9fd7d4c22d43006fbab4f4a16d2c3bef6a4866b1a28ca825c934  contracts/contracts/core/AttestorRegistry.sol
 a3a07b160659377f1161dabe1542b35d54a52512823c5db6e6ff9d120715d498  contracts/contracts/core/Citizen.sol
+a9853bb9f556bc2d4d33432e2b188cde76f28be0b199ad42cc40dacf8ad98483  contracts/contracts/core/CitizenResolver.sol
 936391dbb436589b5dca321d0d94428409c8ccecad0f1b6ffd835e3f6d8e0283  contracts/contracts/core/ConstitutionRegistry.sol
 94cd7e259631a0878c87008871c4e1a6816a4d4e77fe82071c6d7dda9c61c6f7  contracts/contracts/core/ENSPLUSVault.sol
 9560871345ad2fc2e8a70256a7951a31709684f3b321c50bea1b613a3d8d23e4  contracts/contracts/core/GovernorAdapter.sol
@@ -77,6 +81,7 @@ cbc01a9a3be861368e22f440bc309c428fc9823703744f998f845fec290375e6  contracts/cont
 4782ec6122971c28971ed88b1f322812be15d2ff51d9308d8606d470287c488b  contracts/contracts/test/MockProvenance.sol
 46d649d05135dd97437853b0a929a104d75408c83aaf361af650c2a0cdfdf0e2  contracts/contracts/test/Slice10Mocks.sol
 aa9d2a832173b27c3336f5550d812ac4cfccc3c555ed4d19d90021faa83869c1  contracts/contracts/test/Slice13Mocks.sol
+44ac88ed94e96249118db0f7e99b982f7eb8651faec2ba18fcaf3895b93ef09f  contracts/contracts/test/Slice14Mocks.sol
 b6c80ae7a4375c3b72f1a1a49c61b2594e968e08354814cbbb3fa92c74627d33  contracts/contracts/test/Slice5Mocks.sol
 b22d9637f43f1fa93e5d6d6d5b1b457b9144ee0b4b7a52297277c6614e252a7a  contracts/contracts/test/Slice6Mocks.sol
 3f636aa64399bd99398c8aa398a210511c1d2701ff2c396d0a1c8261b00451a9  contracts/contracts/test/Slice7Mocks.sol
@@ -92,6 +97,7 @@ c06786700c5046782452e81ebd891e8c2aea9fb9b81affbf6b6b840d791c0944  contracts/test
 14302cdc188f12e564c690e514dc56758eec9e8b9a758de98694717c4cdd723d  contracts/test/Slice11.test.js
 d4f7e982025071b298421f1fb8210f72b89b30079925cc89652565ee9ad5f133  contracts/test/Slice12.test.js
 af0b801542da0fc5dbcdace74562c84f71b0c6d3cf50195d5c093d20a0474955  contracts/test/Slice13.test.js
+c798d8d63e851dcf3d1dae3ddf376c3d128244bd704289129b2c25fd2314c164  contracts/test/Slice14.test.js
 a754f351a4e50d680d0a37f94dce8959928266362cd994b6492e06f520eca41e  contracts/test/Slice4.test.js
 aabdb43b04a77e405f5886df7dac0da3652fb45f4a7e74251774d2ecb6e567a5  contracts/test/Slice5.test.js
 b42e17fe8c1a0bd389d8c0bd42a68445a6a1562b993b8102ccb8f66daad2ed35  contracts/test/Slice6.test.js
@@ -113,12 +119,12 @@ e839788b67095f76768266f5f379b29e97f403b4c64e0ed20477c7b14938b62f  contracts/tool
 c021b0e7da02043c8fa68ba800aa2e433bbf318d56d7563350228037c1332586  contracts/tools/gas_snapshot.js
 af7639f18854ef78ca3413d8536a6d2b9027267ffc703c74443d8494bf104b66  contracts/tools/libtrust_mirror.mjs
 b02547829d90594dfb26a401480e06663519f4fa910fc8f1d3bd5261a2bb627b  docs/ADOPTED_IMPROVEMENTS.md
-6e95f78b778cc55599f5c596dc6dcb4f39d08abc392c25b630b3136e3ff4fcba  docs/ENSPLUS_AUTOPILOT_SPEC.md
-069aab68cf47d7cb3afd6c65152d84a6a55b5bf394dcb8791b9314067d6ba760  docs/ENSPLUS_ENSV2_MIGRATION_SPEC.md
-364b847a7daf232a8e8973c90a3a42388718167dabb6177c9ec6b64430fffba2  docs/ENSPLUS_MODULE_MANIFEST_SPEC.md
-5768c39987805a5c93e023f7e69379e7bc278a9382c49a2cd041508cc619c518  docs/ENSPLUS_OVERVIEW.md
-8341a59a7dc61d0db957df98dbea4929d6b40765c6a3d965507c51412ce7e81a  docs/ENSPLUS_SOCIAL_MODULE_CHARTER.md
-10637a3a8b2919d05f85498c27a261779bf7f78a05b343d65c68bdee8b3b24c4  docs/ENSPLUS_THREAT_MODEL.md
+abd1aef7c758e84bcb13f87225c5ee0ec09e107b9eae663a38c59e8a91780e2d  docs/ENSPLUS_AUTOPILOT_SPEC.md
+cd8f6d8bbb2f63f2a4d60ee49fcb03990200b5012f0869b3b86fc4bc8fdace79  docs/ENSPLUS_ENSV2_MIGRATION_SPEC.md
+c2a2f28ffe2a3d7b0e8a38eee20e19024cabcd337a883ea1a56dda1ca88f2dca  docs/ENSPLUS_MODULE_MANIFEST_SPEC.md
+9e5765f3e047f862e7b258d54f7adaa12278bcee328105d43f5e8c04b8aae4fe  docs/ENSPLUS_OVERVIEW.md
+0de8d5e0d3a4d87ea0f6365c220920cf30c0277ea7254f4c0a13a5662f453ade  docs/ENSPLUS_SOCIAL_MODULE_CHARTER.md
+a3e086f9a0e6494ff3b3a81c8f0c6fe89419cf9b5262720ea68d05104e21c1fc  docs/ENSPLUS_THREAT_MODEL.md
 41e10db096a912adb5c6fa50c6179e42427ec76c894cf44e98e21e8c49fe7849  tools/efp_trustgraph.mjs
 6fcf60ee1ef75ae6d54709f5e1a9846ee6fc4b888cd80259a8439233a678dc07  tools/eik_profile.mjs
 dbbed4a58e61ae7b4f11849855cd3cff06c2019394886b6270f314c1136be878  tools/eik_profile.test.mjs
