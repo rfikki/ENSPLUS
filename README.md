@@ -24,6 +24,8 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 | `ENSPLUS_THREAT_MODEL.md` | 14 adversaries, ~45 threats across 8 domains with strength classes (HARD/STRONG/ECONOMIC/POLITICAL/PROCEDURAL), invariants I1–I10 (audit scope), claims register (§11 — what marketing may say) |
 | `ENSPLUS_MODULE_MANIFEST_SPEC.md` | The charter format: lifecycle, schema (§2.1–2.8), permission taxonomy (P-READ..P-EXT + forfeiture set), tier-gated ratification, registry machine checks, renewal-pool worked example, four-document concordance |
 | `ENSPLUS_SOCIAL_MODULE_CHARTER.md` | First complete charter instance: social module v1 (EFP/EIK, P-READ only, pure Tier-0, two-key trust-score activation) |
+| `ENSPLUS_AUDIT_SCOPE.md` | The external-audit boundary: 22 in-scope contracts (~3,045 SLOC), what's out and why, security model, invariants I1–I10, accepted findings, and the 8 questions we most want answered |
+| `DECISIONS_RESOLVED.md` / `FROZEN_DERIVATION_SPEC.md` | The four resolved code-affecting decisions + the frozen era/rank derivation rules |
 | `ADOPTED_IMPROVEMENTS.md` | gwei-names benchmark: verdict on ownerless/robustness/features + what was adopted (HumanAttestor, SDK, gas snapshots, deterministic deploy) and deliberately deferred |
 | `PROJECT_CHECKLIST.md` | Finished (14 slices + tooling) vs deferred (post-audit) vs gating (genesis) — the live status board |
 | `tools/` | On-chain EFP reader (`efp_onchain.mjs`, no hosted API), EIK profile resolver+SVG renderer (`eik_profile.mjs`), LibTrust JS mirror, `ensplus-utils/` SDK, gas snapshot, deterministic deploy, adoption model, cross-fuzz. (The old `efp_trustgraph.mjs` API prototype is superseded by the on-chain reader after the ethid.org wind-down.) |

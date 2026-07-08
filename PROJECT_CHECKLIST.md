@@ -1,5 +1,5 @@
 # ENSPLUS — Project Checklist
-**As of:** 2026-07-05 · **Test status:** 137/137 passing (slices 1–14) · cross-fuzz EVM ≡ JS mirror, 0 mismatches · solc 0.8.26, zero warnings
+**As of:** 2026-07-05 · **Test status:** 144/144 passing (slices 1–14 + hardening) · cross-fuzz EVM ≡ JS mirror, 0 mismatches · solc 0.8.26, zero warnings
 
 ---
 
@@ -50,8 +50,8 @@
 
 ## 🔧 PRE-AUDIT HARDENING (finish before external audit)
 - [ ] Stateful invariant tests for custody-adjacent contracts (SentinelLock especially; Watchtower, TrustOracle)
-- [ ] Settle code-affecting decisions: per-holder Policy A/B accounting vs whole-bloc; capBps vs community size; raffle VRF-vs-blockhash-v1; era/rank derivation freeze
-- [ ] Audit-scope document (what's in / out / why)
+- [x] Settle code-affecting decisions — ALL RESOLVED (see docs/DECISIONS_RESOLVED.md): D-POLICY (whole-bloc directional, Policy A/B reserved), D-CAP (fixed genesis param, conservative lean, no adaptive), D-RAFFLE (block.prevrandao, no VRF), D-DERIVATION (canonical rank tier — fixed a real LibTrust/LibAttestation drift; frozen spec in docs/FROZEN_DERIVATION_SPEC.md)
+- [x] Audit-scope document — docs/ENSPLUS_AUDIT_SCOPE.md (22 contracts / ~3,045 SLOC in scope; deferred waves + externals out; invariants I1–I10; accepted findings; 8 focus questions)
 
 ## 🚧 GATING GENESIS (non-code)
 - [x] Live ENS governor fractional-voting verification — DONE: GovernorCountingSimple, no fractional; adapter pivoted to directional
