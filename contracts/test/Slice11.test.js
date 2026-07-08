@@ -62,7 +62,7 @@ describe("LibTrust — L1-native reputation", () => {
     expect(await H.provenanceScore(WAD, 0n)).to.equal(0n); // Modern era, unranked
     expect(await H.provenanceScore(4n * WAD, 1n)).to.equal(SCALE); // Prepunk + rank 1 = max
     expect(await H.provenanceScore(4n * WAD, 0n)).to.equal(7000n); // era only
-    expect(await H.provenanceScore(WAD, 500n)).to.equal(3000n); // rank tier only
+    expect(await H.provenanceScore(WAD, 500n)).to.equal(2000n); // rank 500 = TOP_1K (canonical)
     // half-band era
     expect(await H.provenanceScore((5n * WAD) / 2n, 0n)).to.equal(3500n); // 2.5e18 -> half of 7000
   });

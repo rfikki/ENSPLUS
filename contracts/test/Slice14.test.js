@@ -80,7 +80,7 @@ describe("CitizenResolver - civic identity as an ENS resolver", () => {
     const names = resolver.interface.fragments
       .filter((f) => f.type === "function" && f.stateMutability !== "view" && f.stateMutability !== "pure")
       .map((f) => f.name).sort();
-    expect(names).to.deep.equal(["link", "setAddr", "setContenthash", "setText", "unlink"]);
+    expect(names).to.deep.equal(["link", "setAddr", "setContenthash", "setName", "setText", "unlink"]);
     // no owner/admin/pause/upgrade
     for (const bad of ["owner", "admin", "pause", "upgradeTo", "setOwner"]) {
       expect(resolver.interface.fragments.some((f) => f.type === "function" && f.name === bad)).to.equal(false);
@@ -174,9 +174,39 @@ describe("CitizenResolver - civic identity as an ENS resolver", () => {
     await expect(resolver.resolve("0x", call)).to.be.revertedWithCustomError(resolver, "OffchainLookup");
   });
 
+  it("link rejects a label that does not belong to the node (.eth 2LD binding)", async () => {
+    const { resolver, ensRegistry, a } = await setup();
+    const nd = node("alice.eth");
+    await ensRegistry.setOwner(nd, a.address);
+    // wrong label for this node -> revert
+    await expect(resolver.connect(a).link(nd, labelOf("notalice")))
+      .to.be.revertedWithCustomError(resolver, "LabelNodeMismatch");
+    // correct label -> ok
+    await resolver.connect(a).link(nd, labelOf("alice"));
+    expect(await resolver.labelOf(nd)).to.equal(ethers.hexlify(labelOf("alice")));
+  });
+
+  it("EIP-181 reverse resolution: an address sets and resolves its primary name", async () => {
+    const { resolver, ensRegistry, a } = await setup();
+    // a reverse node <addr>.addr.reverse is owned by the address itself
+    const reverseNode = ethers.namehash(a.address.slice(2).toLowerCase() + ".addr.reverse");
+    await ensRegistry.setOwner(reverseNode, a.address);
+    expect(await resolver.name(reverseNode)).to.equal(""); // empty until set
+    await resolver.connect(a).setName(reverseNode, "rocky.eth");
+    expect(await resolver.name(reverseNode)).to.equal("rocky.eth");
+    // gated: a non-owner cannot set the reverse name
+    const [, , , b] = await ethers.getSigners();
+    await expect(resolver.connect(b).setName(reverseNode, "thief.eth"))
+      .to.be.revertedWithCustomError(resolver, "NotNodeOwner");
+    // reverse resolves through ENSIP-10 too
+    const nameCall = new ethers.Interface(["function name(bytes32) view returns (string)"]).encodeFunctionData("name", [reverseNode]);
+    const out = await resolver.resolve("0x", nameCall);
+    expect(new ethers.Interface(["function name(bytes32) view returns (string)"]).decodeFunctionResult("name", out)[0]).to.equal("rocky.eth");
+  });
+
   it("advertises the ENS resolver interfaces via supportsInterface", async () => {
     const { resolver } = await setup();
-    for (const id of ["0x01ffc9a7", "0x3b3b57de", "0xf1cb7e06", "0x59d1d43c", "0xbc1c58d1", "0x9061b923"]) {
+    for (const id of ["0x01ffc9a7", "0x3b3b57de", "0xf1cb7e06", "0x59d1d43c", "0xbc1c58d1", "0x691f3431", "0x9061b923"]) {
       expect(await resolver.supportsInterface(id)).to.equal(true);
     }
     expect(await resolver.supportsInterface("0xdeadbeef")).to.equal(false);
