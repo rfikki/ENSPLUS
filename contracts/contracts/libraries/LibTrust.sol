@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {LibAttestation} from "./LibAttestation.sol";
+
 /// @title  LibTrust — L1-native civic reputation (replaces the EFP trust graph)
 /// @notice Composes a bounded reputation score from signals ENSPLUS already
 ///         owns on mainnet — provenance (era + rank), tenure (time wrapped +
@@ -90,12 +92,16 @@ library LibTrust {
             eraPart = ((w - ERA_MIN_WAD) * ERA_PART_MAX) / (ERA_MAX_WAD - ERA_MIN_WAD);
         }
         uint256 rankPart;
-        if (rank != 0) {
-            if (rank <= 999) rankPart = RANK_PART_MAX;
-            else if (rank <= 9_999) rankPart = 2_000;
-            else if (rank <= 99_999) rankPart = 1_000;
-            else rankPart = 500;
-        }
+        // Canonical rank tiers come from LibAttestation.rankTier (D5) — a single
+        // source of truth, so the score can never drift from the attestation
+        // semantics. TOP_100 / TOP_1K / TOP_10K map to descending bonuses;
+        // ranks outside the top 10k carry no rank bonus (era still counts).
+        // (DECISION D-DERIVATION, resolved: reconciles the two rank-band defs.)
+        uint8 tier = LibAttestation.rankTier(rank);
+        if (tier == LibAttestation.TIER_TOP_100) rankPart = RANK_PART_MAX;
+        else if (tier == LibAttestation.TIER_TOP_1K) rankPart = 2_000;
+        else if (tier == LibAttestation.TIER_TOP_10K) rankPart = 1_000;
+        else rankPart = 0;
         uint256 s = eraPart + rankPart;
         return s > SCALE ? SCALE : s;
     }
