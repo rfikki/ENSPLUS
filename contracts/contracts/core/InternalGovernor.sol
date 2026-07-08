@@ -103,9 +103,21 @@ contract InternalGovernor {
     }
 
     // --------------------------------------------------------------- policy
+    /// @dev DECISION D-POLICY (resolved): Policy A/B is RECORDED here but NOT
+    ///      composed into vote weight in v1. Rationale: the external cast is
+    ///      DIRECTIONAL (the live ENS governor is GovernorCountingSimple — no
+    ///      fractional voting, see GovernorAdapter/D12), so a per-holder split of
+    ///      silent weight cannot be expressed externally; and composing silent
+    ///      weight internally per-policy adds snapshot-timing and gaming surface
+    ///      we will not introduce right before audit. v1 therefore treats ALL
+    ///      silent weight as ABSTAIN (never speaks for the silent — covenant
+    ///      "never auto-votes on people"). This registry lets holders record
+    ///      their intended policy now (UI signal) and is the ratified-activation
+    ///      hook for a future fractional-capable era; consumption requires that
+    ///      upgrade and a separate T2 activation.
     enum SilentPolicy {
         Unset,                // behaves as AbstainWhenSilent
-        ConstitutionDelegate, // Policy A: silent weight follows Standing Orders
+        ConstitutionDelegate, // Policy A: silent weight follows Standing Orders (RESERVED)
         AbstainWhenSilent     // Policy B: silent weight always abstains
     }
 
@@ -113,6 +125,18 @@ contract InternalGovernor {
     ENSPLUSVault public immutable vault;
     IProvenanceSource public immutable provenanceSource; // address(0) => neutral
 
+    /// @notice Per-identity weight cap, in bps of capBase = sqrt(totalSupply at
+    ///         snapshot). DECISION D-CAP (resolved): capBps is a fixed GENESIS
+    ///         parameter, NOT holderCount-adaptive (adaptive caps were rejected —
+    ///         dust wallets could grind holderCount to move the cap). The
+    ///         "≤2% per identity" design goal maps to capBps ≈ 0.02·√N·10000 for
+    ///         N roughly-equal active identities, so a fixed capBps hits exactly
+    ///         2% only at one community size: SMALLER communities are flatter
+    ///         (more egalitarian — acceptable, even desirable for whale
+    ///         resistance), LARGER ones let a whale exceed 2% (the risk
+    ///         direction). Genesis therefore sets capBps from the adoption model
+    ///         with a CONSERVATIVE (whale-resistant / lower) lean. Hard-bounded
+    ///         (1, BPS] at construction.
     uint256 public immutable capBps;
     uint256 public immutable quorumBps;
     uint256 public immutable vestingPeriod;

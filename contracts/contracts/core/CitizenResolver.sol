@@ -76,6 +76,8 @@ contract CitizenResolver {
     mapping(bytes32 node => mapping(uint64 => mapping(string => string))) private _text;
     mapping(bytes32 node => mapping(uint64 => mapping(uint256 => bytes))) private _addr;
     mapping(bytes32 node => mapping(uint64 => bytes)) private _contenthash;
+    // reverse resolution (EIP-181): a node's primary name string
+    mapping(bytes32 node => mapping(uint64 => string)) private _name;
 
     // ENS interface ids
     bytes4 private constant IID_ERC165 = 0x01ffc9a7;
@@ -83,17 +85,23 @@ contract CitizenResolver {
     bytes4 private constant IID_ADDR_COIN = 0xf1cb7e06;
     bytes4 private constant IID_TEXT = 0x59d1d43c;
     bytes4 private constant IID_CONTENTHASH = 0xbc1c58d1;
+    bytes4 private constant IID_NAME = 0x691f3431; // EIP-181 reverse resolution
     bytes4 private constant IID_RESOLVE = 0x9061b923; // ENSIP-10
     uint256 private constant COIN_ETH = 60;
+    /// @dev namehash("eth") — the parent of every .eth 2LD, used to verify that
+    ///      a linked label genuinely belongs to the linked node.
+    bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
     event Linked(bytes32 indexed node, address indexed owner, bytes label);
     event Unlinked(bytes32 indexed node, address indexed owner);
     event TextChanged(bytes32 indexed node, string key);
     event AddrChanged(bytes32 indexed node, uint256 coinType);
     event ContenthashChanged(bytes32 indexed node);
+    event NameChanged(bytes32 indexed node, string name);
 
     error NotNodeOwner(bytes32 node, address caller);
     error ReservedKey(string key);
+    error LabelNodeMismatch(bytes32 node, bytes32 expected);
     error UnsupportedResolverFunction(bytes4 selector);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
@@ -122,8 +130,12 @@ contract CitizenResolver {
     // --------------------------------------------------------------- linking
     /// @notice Link an ENS node to an ENSPLUS 2LD label. Owner-gated on the ENS
     ///         side; the TrustOracle gates the civic reads on the ENSPLUS side.
-    ///         Bumps recordVersion (fresh record slate).
+    ///         The label must genuinely belong to the node: for a `.eth` 2LD,
+    ///         node == keccak256(namehash("eth"), keccak256(label)). Bumps
+    ///         recordVersion (fresh record slate).
     function link(bytes32 node, bytes calldata label) external onlyNodeOwner(node) {
+        bytes32 expected = keccak256(abi.encodePacked(ETH_NODE, keccak256(label)));
+        if (node != expected) revert LabelNodeMismatch(node, expected);
         _label[node] = label;
         recordVersion[node] += 1;
         emit Linked(node, msg.sender, label);
@@ -162,6 +174,16 @@ contract CitizenResolver {
         emit ContenthashChanged(node);
     }
 
+    /// @notice EIP-181 reverse record. The caller must own `node` — for a
+    ///         reverse node `<addr>.addr.reverse`, the ENS reverse registrar
+    ///         makes the address itself the owner, so an address sets its own
+    ///         primary name here. Enables CitizenResolver to serve as a reverse
+    ///         resolver, not only a forward one.
+    function setName(bytes32 node, string calldata newName) external onlyNodeOwner(node) {
+        _name[node][recordVersion[node]] = newName;
+        emit NameChanged(node, newName);
+    }
+
     // ---------------------------------------------------------------- reads
     /// @notice EIP-634 text. Reserved `ensplus.*` keys are computed live.
     function text(bytes32 node, string memory key) public view returns (string memory) {
@@ -189,9 +211,14 @@ contract CitizenResolver {
         return _contenthash[node][recordVersion[node]];
     }
 
+    /// @notice EIP-181 reverse resolution — the node's primary name.
+    function name(bytes32 node) public view returns (string memory) {
+        return _name[node][recordVersion[node]];
+    }
+
     function supportsInterface(bytes4 id) external pure returns (bool) {
         return id == IID_ERC165 || id == IID_ADDR || id == IID_ADDR_COIN || id == IID_TEXT
-            || id == IID_CONTENTHASH || id == IID_RESOLVE;
+            || id == IID_CONTENTHASH || id == IID_NAME || id == IID_RESOLVE;
     }
 
     // ---------------------------------------------------- ENSIP-10 + CCIP
@@ -222,6 +249,10 @@ contract CitizenResolver {
         if (selector == IID_CONTENTHASH) {
             bytes32 node = abi.decode(data[4:], (bytes32));
             return abi.encode(contenthash(node));
+        }
+        if (selector == IID_NAME) {
+            bytes32 node = abi.decode(data[4:], (bytes32));
+            return abi.encode(name(node));
         }
         revert UnsupportedResolverFunction(selector);
     }

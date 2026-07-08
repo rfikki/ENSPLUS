@@ -47,9 +47,14 @@ interface IRenewalExecutor {
 ///           proposal — renewal pricing tracks ETH/USD) and the tithe
 ///           parameters are immutable. No owner, no pause; unenroll and
 ///           bond refund work in every state.
-///         * RAFFLE RANDOMNESS v1: blockhash-derived (documented weakness —
-///           miner-influenceable at the margin; stakes are one base renewal).
-///           Upgrade path: VRF via a chartered module amendment. FLAGGED.
+///         * RAFFLE RANDOMNESS: block.prevrandao (RANDAO) seeded per epoch.
+///           Chosen over blockhash (weakest post-merge) and over Chainlink VRF
+///           (an external dependency + funded subscription would cost the
+///           protocol its ownerlessness) because the stakes are a single base
+///           renewal — a validator must forgo block rewards to bias RANDAO, far
+///           exceeding that reward. raffleDrawn[ep] blocks intra-epoch grinding.
+///           If raffle prizes ever grow materially, VRF via a chartered module
+///           amendment remains the upgrade path (DECISION D-RAFFLE, resolved).
 contract RenewalPool is GovernorExecuted, ReentrancyGuard, IENSPLUSModule {
     // ---------------------------------------------------------------- config
     NameVault public immutable nameVault;
@@ -268,8 +273,8 @@ contract RenewalPool is GovernorExecuted, ReentrancyGuard, IENSPLUSModule {
     }
 
     /// @notice EMBER raffle: renew up to K pseudo-random enrolled names, once
-    ///         per epoch. v1 randomness is blockhash-derived (FLAGGED; VRF is
-    ///         the chartered upgrade path).
+    ///         per epoch. Randomness is block.prevrandao (RANDAO); once-per-epoch
+    ///         guard prevents grinding. (DECISION D-RAFFLE.)
     function raffleDraw() external nonReentrant {
         if (tier() != TIER_EMBER) revert WrongTier(tier(), TIER_EMBER);
         uint256 ep = _openEpoch();
@@ -279,7 +284,7 @@ contract RenewalPool is GovernorExecuted, ReentrancyGuard, IENSPLUSModule {
         if (n == 0) return;
         uint256 cost = baseAnnualCostWei;
         uint256 winners;
-        bytes32 seed = keccak256(abi.encode(blockhash(block.number - 1), ep, address(this)));
+        bytes32 seed = keccak256(abi.encode(block.prevrandao, ep, address(this)));
         for (uint256 k = 0; k < raffleWinnersPerEpoch && winners < n; ++k) {
             if (epochSpent[ep] + cost > epochBudget[ep]) break;
             uint256 id = _enrolledList[uint256(keccak256(abi.encode(seed, k))) % n];
