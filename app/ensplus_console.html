@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENSPLUS — Constitutional Console</title>
+<style>
+:root{
+  --ink:#0E1417; --ink-2:#131C20; --ink-3:#18242A; --line:#243238;
+  --bone:#EDE6D6; --bone-dim:#C9C2B4; --muted:#7C8B8F; --muted-2:#5A6A6E;
+  --verd:#3FA694; --verd-dim:#2C7568; --verd-glow:rgba(63,166,148,.14);
+  --gold:#C6A15B; --gold-dim:#8f7440;
+  --claret:#B4574A; --claret-dim:#7d3a31;
+  --ok:#3FA694; --warn:#C6A15B; --crit:#B4574A;
+  --serif:Georgia,'Iowan Old Style','Palatino Linotype',serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --r:4px; --sp:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--bone);font-family:var(--sans);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+::selection{background:var(--verd);color:var(--ink)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--verd-dim)}
+button{font-family:inherit;cursor:pointer;color:inherit}
+input,select{font-family:inherit;color:inherit}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:400;letter-spacing:.2px}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--verd)}
+.muted{color:var(--muted)}.dim{color:var(--muted-2)}
+.gold{color:var(--gold)}.verd{color:var(--verd)}.claret{color:var(--claret)}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:248px 1fr;grid-template-rows:56px 1fr;height:100vh;
+  grid-template-areas:"brand top" "nav main"}
+#brand{grid-area:brand;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:11px;padding:0 20px;background:var(--ink-2)}
+#brand .seal-sm{width:26px;height:26px;flex:none}
+#brand b{font-family:var(--serif);font-size:17px;letter-spacing:1.5px}
+#brand .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+#top{grid-area:top;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;padding:0 24px;background:linear-gradient(180deg,var(--ink-2),var(--ink))}
+#top .pulse{display:flex;gap:26px;align-items:center}
+#top .pstat{display:flex;flex-direction:column;line-height:1.15}
+#top .pstat .v{font-family:var(--mono);font-size:13px;color:var(--bone)}
+#top .pstat .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+#nav{grid-area:nav;border-right:1px solid var(--line);background:var(--ink-2);overflow-y:auto;padding:14px 0 40px}
+#main{grid-area:main;overflow-y:auto;position:relative}
+.navgroup{padding:6px 0}
+.navgroup .glabel{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted-2);padding:10px 22px 6px}
+.navitem{display:flex;align-items:center;gap:11px;padding:8px 22px;color:var(--bone-dim);
+  font-size:13.5px;border-left:2px solid transparent;transition:.14s;position:relative}
+.navitem:hover{background:var(--ink-3);color:var(--bone)}
+.navitem.active{color:var(--bone);border-left-color:var(--verd);background:linear-gradient(90deg,var(--verd-glow),transparent)}
+.navitem .ic{width:15px;height:15px;flex:none;opacity:.85}
+.navitem .badge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:20px;
+  background:var(--ink);border:1px solid var(--line);color:var(--muted)}
+.navitem.active .badge{border-color:var(--verd-dim);color:var(--verd)}
+
+/* ---------- connect banner ---------- */
+#connectbar{display:flex;align-items:center;gap:10px}
+.wallet-chip{display:flex;align-items:center;gap:9px;padding:6px 12px;border:1px solid var(--line);
+  border-radius:20px;background:var(--ink-2);font-family:var(--mono);font-size:12px}
+.wallet-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--muted-2)}
+.wallet-chip.on .dot{background:var(--verd);box-shadow:0 0 8px var(--verd)}
+.btn{border:1px solid var(--verd-dim);background:var(--verd-glow);color:var(--verd);padding:7px 15px;
+  border-radius:var(--r);font-size:13px;font-weight:600;letter-spacing:.02em;transition:.14s;white-space:nowrap}
+.btn:hover{background:var(--verd);color:var(--ink)}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--bone-dim)}
+.btn.ghost:hover{border-color:var(--verd-dim);color:var(--verd);background:var(--verd-glow)}
+.btn.danger{border-color:var(--claret-dim);color:var(--claret);background:rgba(180,87,74,.08)}
+.btn.danger:hover{background:var(--claret);color:var(--ink)}
+.btn.gold{border-color:var(--gold-dim);color:var(--gold);background:rgba(198,161,91,.08)}
+.btn.gold:hover{background:var(--gold);color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:4px 10px;font-size:11.5px}
+
+/* ---------- panels ---------- */
+.panel{display:none;padding:28px 34px 60px;max-width:1180px;animation:fade .3s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.phead{margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.phead h1{font-size:27px;margin:5px 0 3px}
+.phead p{color:var(--muted);font-size:13.5px;max-width:70ch}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.g-2-1{grid-template-columns:2fr 1fr}
+@media(max-width:1080px){.g2,.g3,.g-2-1{grid-template-columns:1fr}}
+
+.card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card.raised{background:var(--ink-3)}
+.card h3{font-size:16px;margin-bottom:3px;display:flex;align-items:center;gap:9px}
+.card .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+.card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.card-hd h3{margin:0}
+
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line)}
+.stat-row:last-child{border-bottom:0}
+.stat-row .k{color:var(--muted);font-size:12.5px}
+.stat-row .v{font-family:var(--mono);font-size:13.5px}
+.big{font-family:var(--mono);font-size:30px;letter-spacing:-.5px;line-height:1}
+.big .u{font-size:13px;color:var(--muted);margin-left:5px;letter-spacing:0}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid var(--line)}
+.pill.verd{color:var(--verd);border-color:var(--verd-dim);background:var(--verd-glow)}
+.pill.gold{color:var(--gold);border-color:var(--gold-dim);background:rgba(198,161,91,.09)}
+.pill.claret{color:var(--claret);border-color:var(--claret-dim);background:rgba(180,87,74,.09)}
+.pill.mut{color:var(--muted)}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+hr.hair{border:0;border-top:1px solid var(--line);margin:16px 0}
+.covenant{display:inline-flex;gap:7px;align-items:center;font-family:var(--mono);font-size:10.5px;
+  color:var(--verd);border:1px dashed var(--verd-dim);padding:5px 11px;border-radius:20px;letter-spacing:.04em}
+
+/* forms */
+.field{margin-bottom:13px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:var(--r);
+  padding:9px 11px;font-family:var(--mono);font-size:13px;transition:.14s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--verd-dim);box-shadow:0 0 0 3px var(--verd-glow)}
+.inline{display:flex;gap:10px;align-items:flex-end}.inline .field{flex:1;margin-bottom:0}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.hoverable:hover td{background:var(--ink-3)}
+.tnum{font-family:var(--mono);text-align:right}
+
+/* meter / bar */
+.meter{height:7px;background:var(--ink);border-radius:20px;overflow:hidden;border:1px solid var(--line)}
+.meter>span{display:block;height:100%;background:linear-gradient(90deg,var(--verd-dim),var(--verd));border-radius:20px;transition:width .5s}
+.meter.gold>span{background:linear-gradient(90deg,var(--gold-dim),var(--gold))}
+
+/* toast */
+#toast{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:9px;z-index:100}
+.toast{background:var(--ink-3);border:1px solid var(--verd-dim);border-left:3px solid var(--verd);
+  padding:11px 15px;border-radius:var(--r);font-size:12.5px;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  animation:slidein .25s ease}
+.toast.gold{border-color:var(--gold-dim);border-left-color:var(--gold)}
+.toast.claret{border-color:var(--claret-dim);border-left-color:var(--claret)}
+.toast .tt{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+@keyframes slidein{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* proposal / list rows */
+.lrow{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:11px;background:var(--ink-2);transition:.14s}
+.lrow:hover{border-color:var(--verd-dim)}
+.lrow-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px}
+.lrow-hd .ttl{font-family:var(--serif);font-size:15.5px}
+.phase-track{display:flex;gap:3px;margin:11px 0 8px}
+.phase-seg{flex:1;height:4px;border-radius:20px;background:var(--line)}
+.phase-seg.done{background:var(--verd-dim)}.phase-seg.now{background:var(--verd);box-shadow:0 0 7px var(--verd)}
+.tally{display:flex;gap:14px;font-family:var(--mono);font-size:12px;margin-top:4px}
+
+/* seal + gauge svg blocks */
+.sealwrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px}
+.gaugewrap{padding:4px}
+
+/* era swatch */
+.era-chip{font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:3px;letter-spacing:.05em}
+.era-0{background:rgba(198,161,91,.16);color:var(--gold);border:1px solid var(--gold-dim)}
+.era-1{background:rgba(63,166,148,.14);color:var(--verd);border:1px solid var(--verd-dim)}
+.era-2{background:var(--ink);color:var(--bone-dim);border:1px solid var(--line)}
+.era-3{background:var(--ink);color:var(--muted);border:1px solid var(--line)}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px}
+.kv .k{color:var(--muted);font-family:var(--mono);font-size:11px}
+.kv .v{font-family:var(--mono);text-align:right}
+.note{font-size:11.5px;color:var(--muted-2);font-style:italic;margin-top:8px;line-height:1.5}
+.wt-ladder{display:flex;gap:2px;margin-top:6px}
+.wt-step{flex:1;text-align:center;padding:5px 2px;font-family:var(--mono);font-size:9px;letter-spacing:.05em;
+  text-transform:uppercase;border:1px solid var(--line);color:var(--muted-2);border-radius:3px}
+.wt-step.on{border-color:currentColor}
+
+/* ---------- user guide ---------- */
+.qs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:4px 0 8px}
+@media(max-width:900px){.qs{grid-template-columns:1fr 1fr}}
+.qs-step{background:var(--ink-3);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;position:relative}
+.qs-step .num{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--verd);text-transform:uppercase}
+.qs-step h4{font-size:14.5px;margin:6px 0 4px}
+.qs-step p{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.45}
+.acc{border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;background:var(--ink-2);overflow:hidden}
+.acc-hd{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none;transition:.14s}
+.acc-hd:hover{background:var(--ink-3)}
+.acc-hd .lhs{display:flex;align-items:center;gap:12px}
+.acc-hd .ic{width:17px;height:17px;color:var(--verd);flex:none}
+.acc-hd h4{font-size:15px}
+.acc-hd .sub2{font-size:11.5px;color:var(--muted)}
+.acc-hd .chev{color:var(--verd);transition:transform .2s;flex:none}
+.acc.open .chev{transform:rotate(90deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .32s ease}
+.acc.open .acc-body{max-height:1400px}
+.acc-inner{padding:2px 18px 18px}
+.acc-inner .why{font-size:13px;color:var(--bone-dim);margin-bottom:8px;line-height:1.55}
+ol.steps{counter-reset:s;list-style:none;margin:6px 0 4px}
+ol.steps li{counter-increment:s;position:relative;padding:8px 0 8px 36px;border-bottom:1px solid var(--line);font-size:13px}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:7px;width:23px;height:23px;border-radius:50%;
+  border:1px solid var(--verd-dim);color:var(--verd);font-family:var(--mono);font-size:11px;display:flex;align-items:center;justify-content:center}
+ol.steps li b{color:var(--bone)}
+.gloss{width:100%;border-collapse:collapse}
+.gloss td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:12.5px}
+.gloss td:first-child{width:180px;font-family:var(--mono);color:var(--verd);font-size:12px}
+.guide-cta{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- status banners / community ---------- */
+.banner{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:var(--r);margin-bottom:18px;font-size:12.5px;line-height:1.55}
+.banner .bt{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+.banner.info{background:var(--verd-glow);border:1px solid var(--verd-dim);color:var(--bone-dim)}
+.banner.info .bt{color:var(--verd)}
+.banner.planned{background:rgba(198,161,91,.08);border:1px solid var(--gold-dim);color:var(--bone-dim)}
+.banner.planned .bt{color:var(--gold)}
+.banner .bic{flex:none;margin-top:1px}
+.preview{opacity:.6;filter:saturate(.6)}
+.stamp{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold);border:1px dashed var(--gold-dim);padding:3px 9px;border-radius:20px}
+.glegend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--muted)}
+.glegend span{display:inline-flex;align-items:center;gap:6px}
+.dotc{width:9px;height:9px;border-radius:50%;display:inline-block}
+.gnode text{font-family:var(--mono);font-size:9.5px}
+.badge.soon{color:var(--gold);border-color:var(--gold-dim)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="brand">
+    <svg class="seal-sm" viewBox="0 0 100 100"><use href="#sealGlyph"/></svg>
+    <div><b>ENSPLUS</b><div class="tag">Constitutional Delegate</div></div>
+  </div>
+  <div id="top">
+    <div class="pulse" id="pulse"></div>
+    <div id="connectbar"></div>
+  </div>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div id="toast"></div>
+
+<!-- shared SVG defs (seal glyph) -->
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="sealGlyph">
+    <circle cx="50" cy="50" r="47" fill="none" stroke="#3FA694" stroke-width="2"/>
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#C6A15B" stroke-width="1" stroke-dasharray="2 3"/>
+    <path d="M50 26 L61 44 L50 62 L39 44 Z" fill="none" stroke="#C6A15B" stroke-width="2"/>
+    <circle cx="50" cy="50" r="5" fill="#3FA694"/>
+    <path d="M32 70 Q50 80 68 70" fill="none" stroke="#3FA694" stroke-width="1.5"/>
+  </g>
+</defs></svg>
+
+<script>
+/* ============================================================================
+   ENSPLUS console — demo state model faithful to the on-chain contracts.
+   No chain connection (viewer sandbox); interactions mutate local state so the
+   full backend scope is demonstrable. Numbers/logic mirror the real libraries.
+============================================================================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const fmt=(n,d=0)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maxFractionDigits:d,maximumFractionDigits:d});
+const short=a=>a.slice(0,6)+'…'+a.slice(-4);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---- LibTrust weights (verbatim from LibTrust.sol) ---- */
+const TW={PROV:4000,TEN:2500,PART:3000,CAT:500,HUMAN:2000,SCALE:10000};
+const ERA_NAMES=['Prepunk','Auction','Permanent','Modern'];
+const ERA_PART=[7000,4666,2333,0];           // eraPart by era (4e18..1e18 mapped)
+function rankPart(rank){ if(!rank)return 0; if(rank<=100)return 3000; if(rank<=1000)return 2000; if(rank<=10000)return 1000; return 0; }
+function provenanceScore(era,rank,attested){ if(!attested)return 0; return Math.min(TW.SCALE, ERA_PART[era]+rankPart(rank)); }
+function tenureScore(days,banked){ const t=Math.min(1,days/730)*6000; return Math.min(TW.SCALE, t + Math.min(banked,10)*400); }
+function participationScore(active,since,credits){ const c=since?Math.min(active,since)/since*5000:0; const v=Math.min(active,20)*150; const cr=Math.min(1,credits/1000)*2000; return Math.min(TW.SCALE, c+v+cr); }
+function categoryScore(bits){ let n=0;for(let b=bits;b;b>>=1)n+=b&1; return Math.min(TW.SCALE,n*2500); }
+function reputation(m){
+  const p=provenanceScore(m.era,m.rank,m.attested), te=tenureScore(m.tenureDays,m.banked),
+        pa=participationScore(m.epochsActive,m.epochsSince,m.credits), c=categoryScore(m.categoryBits);
+  let base=Math.floor((p*TW.PROV+te*TW.TEN+pa*TW.PART+c*TW.CAT)/TW.SCALE);
+  if(m.human)base+=TW.HUMAN;
+  const rep=Math.min(TW.SCALE,base);
+  return {p,te,pa,c,rep,mult:1+rep*0.25/TW.SCALE};
+}
+
+/* ---- adoption/threshold model (from adoption_model.mjs) ---- */
+const NICK=3_260_000, SUPPLY=100_000_000;
+const THRESHOLDS=[
+  {name:'Seedling',at:100_000,note:'Top-tier delegate; a credible public voice.'},
+  {name:'Quorum-maker',at:1_000_000,note:'Can alone satisfy the ~1% executable quorum.'},
+  {name:'Swing bloc',at:NICK-400_000,note:'Pivotal on ordinary, non-crisis proposals.'},
+  {name:'Counterweight',at:NICK,note:'Parity with Nick on a contested vote — nothing passes over objection.'},
+  {name:'Decisive',at:Math.round(NICK*1.6),note:'Drives outcomes affirmatively; center of gravity.'},
+];
+function blocTier(w){ let r=THRESHOLDS[0]; for(const t of THRESHOLDS)if(w>=t.at)r=t; return r; }
+
+/* ---- demo state ---- */
+const S={
+  connected:false,
+  addr:'0x1D3a…rocky'.replace('…','5F9c2b7Ae4D8'),
+  ens:'rocky.eth',
+  protocol:{wrappedTokens:1_420_000, holders:2140, epoch:7, tier:2, blocWrapped:1_420_000},
+  me:{
+    ensPlus:100, ensUnwrapped:9_900, vestedPct:100,
+    era:0, rank:42, attested:true, tenureDays:1120, banked:5,
+    epochsActive:18, epochsSince:20, credits:1500, categoryBits:0b101, human:false,
+    citizen:true, primaryName:'rocky.eth', linkedLabel:'rocky', citizenRetired:false,
+  },
+  creditLedger:[
+    {epoch:5, action:'Revealed a vote', amt:300},
+    {epoch:6, action:'Revealed a vote', amt:300},
+    {epoch:7, action:'Created a proposal', amt:400},
+    {epoch:7, action:'Revealed a vote', amt:500},
+  ],
+  social:{
+    nodes:[
+      {name:'rocky.eth', era:0, me:true},
+      {name:'prepunk.eth', era:0},
+      {name:'elder.eth', era:0},
+      {name:'scribe.eth', era:1},
+      {name:'vault.eth', era:2},
+      {name:'warden.eth', era:2},
+      {name:'ceremony.eth', era:3},
+    ],
+    // directed follows AMONG anchored citizens [fromIdx, toIdx]
+    edges:[[0,1],[0,2],[0,3],[1,0],[1,2],[2,0],[2,1],[2,3],[3,2],[4,0],[5,2]],
+  },
+  names:[
+    {label:'rilxxlir', era:0, rank:42, expiryDays:210, wrapped:true, sentinel:null, watched:true, renewTier:3, banked:5},
+    {label:'vault', era:2, rank:0, expiryDays:64, wrapped:true, sentinel:null, watched:true, renewTier:2, banked:1},
+    {label:'999', era:1, rank:512, expiryDays:19, wrapped:true, sentinel:null, watched:true, renewTier:1, banked:0},
+    {label:'ceremony', era:3, rank:0, expiryDays:5, wrapped:true, sentinel:null, watched:true, renewTier:0, banked:0},
+  ],
+  proposals:[
+    {id:41, title:'Ratify Endowment rate-limit alignment (SO-3: treasury protection)', kind:'Treasury', phase:2, tier:2, for:118400, against:9200, abstain:4100, mine:null},
+    {id:42, title:'Charter the Specimen Plate art module (permissions: TOKENURI)', kind:'Module', phase:1, tier:1, for:52000, against:11000, abstain:8000, mine:null},
+    {id:43, title:'Set capBps genesis parameter to 3200 (conservative lean)', kind:'Governance', phase:0, tier:2, for:0, against:0, abstain:0, mine:null},
+  ],
+  articles:[
+    {n:'0', t:'The ENS Constitution', s:'Layer-0 — adopted verbatim, immutable', locked:true},
+    {n:'V', t:'The Delegate Covenant', s:'Whole-bloc directional casting; never speaks for the silent', locked:true},
+    {n:'VI', t:'Custody & Exit (C4)', s:'Unwrap is feeless and ungateable, always', locked:true},
+    {n:'VII', t:'Provenance & Standing', s:'Era/rank attestation; quadratic + 2% identity cap', locked:true},
+    {n:'VIII', t:'Module Charters', s:'On-chain machine checks; forfeitures byte-hash bound', locked:true},
+    {n:'IX', t:'The Sentinel', s:'Owner-opt-in theft locks; never protocol-imposed', locked:true},
+    {n:'X', t:'Migration', s:'One-shot ENSv2 slot — ratifiable, born empty', locked:false},
+  ],
+  standingOrders:[
+    {id:'SO-1', t:'Defend the registrar-fee mechanism', class:'Protective'},
+    {id:'SO-3', t:'Oppose intent-free treasury outflows above the cap', class:'Protective'},
+    {id:'SO-5', t:'Preserve name-owner resolution autonomy', class:'Protective'},
+    {id:'SO-7', t:'Abstain on undecidable/unclassified matters', class:'Neutral'},
+  ],
+  modules:[
+    {id:'renewal-pool', impl:'0x…RenewalPool', perms:['RENEW','TREASURY_READ'], status:'Chartered', article:'VIII'},
+    {id:'participation-credits', impl:'0x…Credits', perms:['CREDIT_MINT'], status:'Chartered', article:'VIII'},
+    {id:'specimen-plate', impl:'0x…Plate', perms:['TOKENURI'], status:'Proposed', article:'VIII'},
+  ],
+  // per-proposal commit-reveal scratch
+  commits:{},
+};
+
+/* ---- toast ---- */
+function toast(title,msg,kind=''){ const t=el('div','toast '+kind, `<div class="tt">${title}</div>${msg}`);
+  $('#toast').appendChild(t); setTimeout(()=>{t.style.opacity=0;t.style.transition='.4s';setTimeout(()=>t.remove(),400)},3400); }
+
+/* ---- nav ---- */
+const NAV=[
+  {g:'Register',items:[['overview','Overview',icOverview],['guide','User Guide',icBook]]},
+  {g:'Custody',items:[['vault','ENS+ Vault',icVault],['names','Name Vault',icName]]},
+  {g:'Governance',items:[['govern','Internal Governor',icGov],['constitution','Constitution',icDoc],['bloc','Bloc Voice',icBloc]]},
+  {g:'Name Protection',items:[['renewal','Renewal Pool',icFlame],['sentinel','Sentinel Lock',icLock],['watchtower','Watchtower',icEye]]},
+  {g:'Identity & Trust',items:[['identity','Citizen & Provenance',icSeal],['trust','Reputation',icStar],['credits','Credits',icCredit],['resolver','Civic Resolver',icCard]]},
+  {g:'Community',items:[['social','Follow Graph',icNet],['guilds','Guilds',icGuild]]},
+];
+let VIEW='overview';
+function renderNav(){
+  const n=$('#nav'); n.innerHTML='';
+  NAV.forEach(grp=>{
+    const g=el('div','navgroup'); g.appendChild(el('div','glabel',grp.g));
+    grp.items.forEach(([id,label,ic])=>{
+      const it=el('div','navitem'+(id===VIEW?' active':''));
+      it.innerHTML=`<span class="ic">${ic()}</span>${label}`;
+      const b=badgeFor(id); if(b)it.appendChild(el('span','badge'+(b==='soon'?' soon':''),b));
+      it.onclick=()=>{VIEW=id;renderNav();renderMain();$('#main').scrollTop=0;};
+      g.appendChild(it);
+    });
+    n.appendChild(g);
+  });
+}
+function badgeFor(id){
+  if(id==='govern')return String(S.proposals.filter(p=>p.phase<3).length);
+  if(id==='watchtower'){const c=S.names.filter(n=>n.watched&&n.expiryDays<=30).length;return c?String(c):null;}
+  if(id==='names')return String(S.names.filter(n=>n.wrapped).length);
+  if(id==='social')return 'opt';
+  if(id==='guilds')return 'soon';
+  return null;
+}
+
+/* ---- top pulse + connect ---- */
+function renderTop(){
+  const p=S.protocol;
+  $('#pulse').innerHTML=[
+    ['Wrapped ENS+',fmt(p.wrappedTokens)],
+    ['Holders',fmt(p.holders)],
+    ['Epoch',`#${p.epoch}`],
+    ['Bloc tier',`T${p.tier}`],
+    ['Bloc power',blocTier(p.blocWrapped).name],
+  ].map(([k,v])=>`<div class="pstat"><span class="v">${v}</span><span class="k">${k}</span></div>`).join('');
+  const c=$('#connectbar');
+  const guideBtn='<button class="btn ghost sm" id="guideBtn" style="margin-right:4px">📖 Guide</button>';
+  if(S.connected){
+    c.innerHTML=guideBtn+`<div class="wallet-chip on"><span class="dot"></span>${S.ens} · ${short(S.addr)}</div>`;
+  }else{
+    c.innerHTML=guideBtn+`<div class="wallet-chip"><span class="dot"></span>Not connected</div><button class="btn" id="cbtn">Connect wallet</button>`;
+    $('#cbtn').onclick=()=>{S.connected=true;toast('Session','Connected as '+S.ens+' — demo identity loaded.');renderTop();renderMain();};
+  }
+  $('#guideBtn').onclick=()=>{VIEW='guide';renderNav();renderMain();$('#main').scrollTop=0;};
+}
+
+/* =====================  PANEL RENDERERS  ===================== */
+function renderMain(){
+  const m=$('#main'); m.innerHTML='';
+  const p=el('div','panel active');
+  p.appendChild(PANELS[VIEW]());
+  m.appendChild(p);
+}
+const PANELS={
+  overview:pOverview, guide:pGuide, vault:pVault, names:pNames, govern:pGovern, constitution:pConstitution,
+  bloc:pBloc, renewal:pRenewal, sentinel:pSentinel, watchtower:pWatchtower,
+  identity:pIdentity, trust:pTrust, credits:pCredits, resolver:pResolver, social:pSocial, guilds:pGuilds,
+};
+function head(eyebrow,title,desc){ const h=el('div','phead');
+  h.innerHTML=`<div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p>${desc}</p>`; return h; }
+
+/* ---------- OVERVIEW ---------- */
+function pOverview(){
+  const w=el('div'); w.appendChild(head('The Register','A whale-resistant constitutional delegate for ENS',
+    'One ownerless bloc that wraps ENS tokens and names, votes as a coordinated counterweight, and protects the names it holds. No owner, no admin, no upgrade — exit is always open.'));
+  const r=reputation(S.me);
+  const g=el('div','grid g-2-1');
+  // left: bloc gauge + protocol
+  const left=el('div');
+  const gc=el('div','card'); gc.innerHTML=`<div class="card-hd"><h3>Bloc power</h3><span class="pill verd"><span class="dot"></span>Live</span></div>`;
+  gc.appendChild(blocGauge(S.protocol.blocWrapped));
+  const t=blocTier(S.protocol.blocWrapped);
+  gc.appendChild(el('div','note',`At ${fmt(S.protocol.blocWrapped)} ENS wrapped, the bloc is a <b class="verd">${t.name}</b>. ${t.note} The gauge marks Nick's ~3.26M contested weight; external firepower is the raw sum of wrapped tokens, cast in one direction.`));
+  left.appendChild(gc);
+  const pc=el('div','card'); pc.style.marginTop='16px';
+  pc.innerHTML=`<h3>Protocol pulse</h3><div class="sub">Immutable core, chartered modules</div>`;
+  [['Wrapped ENS+',fmt(S.protocol.wrappedTokens)+' / 100M supply'],['Participating holders',fmt(S.protocol.holders)],
+   ['Current epoch',`#${S.protocol.epoch} · tier T${S.protocol.tier}`],['Names under protection',S.names.filter(n=>n.wrapped).length],
+   ['Open proposals',S.proposals.filter(x=>x.phase<3).length],['Contracts / tests','22 · 144 passing']]
+   .forEach(([k,v])=>pc.appendChild(rowKV(k,v)));
+  left.appendChild(pc);
+  g.appendChild(left);
+  // right: identity seal
+  const right=el('div','card');
+  right.innerHTML=`<div class="card-hd"><h3>Your standing</h3></div>`;
+  right.appendChild(sealBlock(S.me.era, r.rep, S.me.human));
+  right.appendChild(el('div','kv',`
+    <div class="k">Citizen</div><div class="v">${S.me.citizen?'Minted':'—'}</div>
+    <div class="k">Era</div><div class="v">${ERA_NAMES[S.me.era]}</div>
+    <div class="k">Rank</div><div class="v">#${S.me.rank||'—'}</div>
+    <div class="k">Reputation</div><div class="v verd">${r.rep} / 10000</div>
+    <div class="k">Multiplier</div><div class="v gold">${r.mult.toFixed(3)}×</div>
+    <div class="k">Human</div><div class="v">${S.me.human?'<span class="verd">Verified</span>':'Unverified'}</div>`));
+  const qa=el('div'); qa.style.marginTop='14px'; qa.style.display='flex'; qa.style.gap='8px'; qa.style.flexWrap='wrap';
+  qa.appendChild(navBtn('Vote','govern')); qa.appendChild(navBtn('Protect a name','sentinel'));
+  if(!S.me.human)qa.appendChild(navBtn('Prove humanity','identity','gold'));
+  right.appendChild(qa);
+  g.appendChild(right);
+  w.appendChild(g);
+  // covenant strip
+  const cov=el('div'); cov.style.marginTop='18px'; cov.style.display='flex'; cov.style.gap='10px'; cov.style.flexWrap='wrap';
+  ['No owner · no admin · no upgrade','Exit always feeless (Covenant C4)','Execute-by-proposal only','Ownerless zkPassport humanity']
+    .forEach(t=>cov.appendChild(el('span','covenant',`◆ ${t}`)));
+  w.appendChild(cov);
+  return w;
+}
+function rowKV(k,v){const r=el('div','stat-row');r.innerHTML=`<span class="k">${k}</span><span class="v">${v}</span>`;return r;}
+function navBtn(label,view,cls=''){const b=el('button','btn sm '+cls,label);b.onclick=()=>{VIEW=view;renderNav();renderMain();};return b;}
+
+/* ---------- USER GUIDE / FIELD HANDBOOK ---------- */
+function pGuide(){
+  const w=el('div');
+  w.appendChild(head('Handbook','Field Handbook',
+    'How to use ENSPLUS, end to end — and the ideas behind it. ENSPLUS is an ownerless wrapper over ENS: it turns dispersed token- and name-holders into one whale-resistant constitutional voting bloc, and protects the names it holds. No owner, no admin, no upgrade — and your exit is always open.'));
+
+  const qs=el('div','card');
+  qs.innerHTML=`<div class="card-hd"><h3>Quick start</h3><span class="pill verd"><span class="dot"></span>4 steps</span></div>`;
+  const qsg=el('div','qs');
+  [['Step 1','Connect','Load your demo identity — Citizen, provenance, and reputation appear.','overview'],
+   ['Step 2','Wrap ENS → ENS+','Gain voting weight. New wraps vest over 30 days; unwrapping is always feeless.','vault'],
+   ['Step 3','Protect your names','Wrap .eth names, enroll in the Renewal Pool, arm the Sentinel lock.','names'],
+   ['Step 4','Participate','Vote via commit-reveal; the bloc casts your collective decision at the ENS DAO.','govern']]
+   .forEach(([num,title,desc,view])=>{
+     const c=el('div','qs-step');
+     c.innerHTML=`<div class="num">${num}</div><h4>${title}</h4><p>${desc}</p>`;
+     const b=el('button','btn sm ghost','Open →');
+     b.onclick=()=>{if(!S.connected){S.connected=true;renderTop();}VIEW=view;renderNav();renderMain();$('#main').scrollTop=0;};
+     c.appendChild(b);qsg.appendChild(c);
+   });
+  qs.appendChild(qsg);
+  w.appendChild(qs);
+
+  const wt=el('div');wt.style.marginTop='18px';
+  wt.appendChild(el('div','eyebrow','Walkthroughs'));
+  wt.appendChild(el('div',null,'<div style="height:8px"></div>'));
+  const secs=[
+    {ic:icVault,t:'Custody — wrapping tokens & names',s:'ENS+ Vault',view:'vault',
+     why:'Wrapping ENS mints ENS+ 1:1; that wrapped weight is what the bloc votes with. New wraps vest linearly over 30 days so nobody can flash-borrow governance power. Wrapping a .eth name places it under protection without changing who resolves it — you keep and can reclaim the controller.',
+     steps:['Go to <b>ENS+ Vault</b> and enter an amount to <b>Wrap</b>.','Watch your voting weight update — √(balance) × provenance, capped per identity.','In <b>Name Vault</b>, wrap a .eth name (U-721 or W-1155 custody).','Unwrap anytime — feeless and ungateable (Covenant C4).']},
+    {ic:icGov,t:'Voting — the commit–reveal flow',s:'Internal Governor',view:'govern',
+     why:'Votes are cast in two phases so nobody can buy or copy your vote: first you commit a sealed choice, then you reveal it. Your weight is quadratic (√balance), provenance-weighted, and capped at ~2% per identity — so whales cannot dominate.',
+     steps:['Open <b>Internal Governor</b> and pick a proposal in the <b>Commit</b> phase.','<b>Commit</b> For, Against, or Abstain — your choice is sealed on-chain.','When it enters <b>Reveal</b>, click <b>Reveal my vote</b> to count your weight.','The closed result folds into the bloc\'s single directional vote at the ENS DAO.']},
+    {ic:icBloc,t:'The bloc\'s external voice',s:'Bloc Voice',view:'bloc',
+     why:'The ENS governor has no fractional voting, so the bloc casts one direction with its full weight — mirroring the internal decision or a Standing Order, and abstaining when the internal vote is too divided. External firepower is the raw sum of wrapped tokens; the gauge shows your power against Nick\'s ~3.26M.',
+     steps:['Open <b>Bloc Voice</b> to see how the bloc casts on live ENS DAO proposals.','Read the <b>bloc-power gauge</b> — Seedling → Counterweight → Decisive.','Note the abstain-on-division rule: the bloc never guesses.']},
+    {ic:icLock,t:'Protecting a name',s:'Sentinel Lock',view:'sentinel',
+     why:'Three independent layers. The Renewal Pool keeps names alive (bank years toward immortality). The Sentinel is your own opt-in theft lock — a transfer/unwrap timelock with guardians and a panic freeze. The Watchtower watches expiry and escalates as it nears.',
+     steps:['In <b>Renewal Pool</b>, bank years on a name to climb the coverage tiers.','In <b>Sentinel Lock</b>, <b>Arm</b> a name with a timelock + guardians.','If a key is compromised, <b>Panic freeze</b> halts even a matured release.','Check <b>Watchtower</b> for expiry escalation on every watched name.']},
+    {ic:icSeal,t:'Your identity & humanity',s:'Citizen & Provenance',view:'identity',
+     why:'Your Citizen is a soulbound identity with its own token-bound account. Provenance proves your name\'s era (Prepunk/Auction/Permanent/Modern) and rank via Merkle proof — it costs history, which a fresh wallet cannot fake. Proving humanity (zkPassport) adds a sybil-proof bonus and stores only a zk nullifier, never your passport.',
+     steps:['Open <b>Citizen & Provenance</b> to see your era, rank, and seal.','Click <b>Prove humanity</b> to verify as a unique human (optional).','Your reputation and civic records update instantly.']},
+    {ic:icStar,t:'How reputation is computed',s:'Reputation',view:'trust',
+     why:'L1-native and sybil-resistant: provenance (40%), tenure (25%), participation (30%), category (5%), plus a humanity bonus — bounded to [1.00×, 1.25×]. Every input costs history or sustained effort, so a fresh sybil scores exactly 1.00× and bought followers do nothing. You are never punished for participating.',
+     steps:['Open <b>Reputation</b> to see each component and its weighted contribution.','Compare yourself to a fresh sybil wallet (1.00×) in the same panel.','Raise it over time by voting consistently, banking years, and staying wrapped.']},
+    {ic:icCard,t:'Civic resolution & records',s:'Civic Resolver',view:'resolver',
+     why:'An ownerless ENS resolver — forward and reverse. Your civic identity surfaces as ordinary ensplus.* records any ENS app can read; an address resolves back to its primary name (EIP-181). Normalization is client-side (ENSIP-15); on-chain, labels are opaque hashes, so legacy names still work.',
+     steps:['Open <b>Civic Resolver</b> to see forward + reverse resolution.','Set your <b>primary name</b> (your reverse record).','Review the live ensplus.* civic records and your profile card.']},
+  ];
+  secs.forEach(sec=>{
+    const a=el('div','acc');
+    a.innerHTML=`<div class="acc-hd"><div class="lhs"><span class="ic">${sec.ic()}</span><div><h4>${sec.t}</h4><div class="sub2">${sec.s}</div></div></div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+      <div class="acc-body"><div class="acc-inner"><div class="why">${sec.why}</div>
+      <ol class="steps">${sec.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div></div>`;
+    a.querySelector('.acc-hd').onclick=()=>a.classList.toggle('open');
+    const cta=el('div','guide-cta');const b=el('button','btn sm','Open '+sec.s+' →');
+    b.onclick=(e)=>{e.stopPropagation();VIEW=sec.view;renderNav();renderMain();$('#main').scrollTop=0;};
+    a.querySelector('.acc-inner').appendChild(cta);cta.appendChild(b);
+    wt.appendChild(a);
+  });
+  w.appendChild(wt);
+
+  const pr=el('div','card');pr.style.marginTop='18px';
+  pr.innerHTML=`<h3>The principles you can rely on</h3><div class="sub">Guarantees enforced by the code, not by trust</div>`;
+  const pg=el('div');pg.style.display='flex';pg.style.flexWrap='wrap';pg.style.gap='10px';pg.style.marginTop='6px';
+  ['No owner · no admin · no upgrade','Exit is always feeless (Covenant C4)','Every privileged action is execute-by-proposal',
+   'The bloc never speaks for the silent','Provenance can\'t be faked — it costs history','Your Sentinel lock is yours, never the protocol\'s']
+   .forEach(t=>pg.appendChild(el('span','covenant',`◆ ${t}`)));
+  pr.appendChild(pg);
+  w.appendChild(pr);
+
+  const gl=el('div','card');gl.style.marginTop='16px';
+  gl.innerHTML=`<h3>Glossary</h3><div class="sub">The vernacular, briefly</div>`;
+  const terms=[
+    ['ENS+','ENS wrapped 1:1 into the vault; the weight the bloc votes with.'],
+    ['Vesting','New wraps gain full weight linearly over 30 days (anti-flash-loan).'],
+    ['Quadratic voting','Weight = √(balance), so buying more tokens yields sharply less added say.'],
+    ['Per-identity cap','A hard ceiling (~2% of weight) so no single holder dominates.'],
+    ['Provenance','Merkle-attested proof of a name\'s era + rank — cannot be faked.'],
+    ['Era','Prepunk (≤2017-06-23), Auction, Permanent (≤2021-10-31), Modern.'],
+    ['Rank / tier','Global registration order; TOP_100 / TOP_1K / TOP_10K tiers.'],
+    ['Epoch · Tier T0–T3','Governance cycles; the bloc earns autonomy tiers by sustained turnout.'],
+    ['Commit–reveal','Two-phase voting: seal your choice, then reveal it — no vote-buying.'],
+    ['Standing Order','A pre-committed position that guides the bloc\'s external vote.'],
+    ['Directional casting','The bloc casts one direction at full weight (ENS has no fractional vote).'],
+    ['Coverage Ratio (CR)','Sets the Renewal tier: Ember → Kindled → Steady → Eternal.'],
+    ['Sentinel Lock','Your opt-in theft lock: timelock + guardians + panic freeze.'],
+    ['Watchtower','Permissionless expiry surveillance with an escalation ladder.'],
+    ['Citizen','Soulbound identity with an ERC-6551 token-bound account.'],
+    ['Reputation / multiplier','L1-native civic score (0–10000) → a 1.00×–1.25× multiplier.'],
+    ['HumanAttestor','Ownerless zkPassport proof-of-humanity; one human ↔ one identity.'],
+    ['recordVersion','Counter that clears a name\'s resolver records cheaply on sale/unwrap.'],
+    ['Participation Credits','Non-transferable record of participation; feeds the reputation score. Built.'],
+    ['Follow Graph (EFP)','Optional: follows among anchored citizens, read on-chain from Base — not load-bearing.'],
+    ['Guild','Planned: community groups by shared provenance (algorithmic, attested, or curated). Not yet built.'],
+    ['Covenant C4','The rule that unwrap/exit is always feeless and never gateable.'],
+  ];
+  const gt=el('table','gloss');const gb=el('tbody');
+  terms.forEach(([t,d])=>{const tr=el('tr');tr.innerHTML=`<td>${t}</td><td class="muted">${d}</td>`;gb.appendChild(tr);});
+  gt.appendChild(gb);gl.appendChild(gt);
+  w.appendChild(gl);
+
+  const cav=el('div','card');cav.style.marginTop='16px';cav.style.borderColor='var(--gold-dim)';
+  cav.innerHTML=`<h3 class="gold">Before you rely on it</h3>
+    <p class="muted" style="font-size:12.5px;margin-top:6px;max-width:82ch">This console is a demonstration — it runs on local state, not a live chain. The protocol itself is code-complete for its audit scope with 146 passing tests, fuzzed invariants, and every open decision resolved, <b class="gold">but it has not yet been externally audited or deployed to mainnet</b>. Nothing here promises a name "can never be stolen" or "will never expire" — the guarantees are precise and bounded, and the honest robustness gap is the pending audit.</p>`;
+  w.appendChild(cav);
+  return w;
+}
+function icBook(){return svg('<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/>');}
+
+
+/* ---------- ENS+ VAULT ---------- */
+function pVault(){
+  const w=el('div'); w.appendChild(head('Custody · Layer 1','ENS+ Vault',
+    'Wrap ENS governance tokens 1:1 into ENS+. Wrapped weight votes as the bloc; a 30-day linear vesting curve resists flash-loan governance. Unwrapping is always available and feeless.'));
+  const g=el('div','grid g2');
+  const c1=el('div','card');
+  c1.innerHTML=`<div class="card-hd"><h3>Your position</h3><span class="covenant">◆ Exit always open</span></div>`;
+  [['ENS+ (wrapped)',fmt(S.me.ensPlus)],['ENS (available)',fmt(S.me.ensUnwrapped)],
+   ['Vested & active',S.me.vestedPct+'%'],['Voting weight (√·prov·cap)',govWeight().toFixed(1)]]
+   .forEach(([k,v])=>c1.appendChild(rowKV(k,v)));
+  const vm=el('div');vm.style.marginTop='12px';
+  vm.innerHTML=`<div class="stat-row" style="border:0;padding-bottom:4px"><span class="k">Vesting</span><span class="v">${S.me.vestedPct}%</span></div><div class="meter gold"><span style="width:${S.me.vestedPct}%"></span></div>`;
+  c1.appendChild(vm);
+  g.appendChild(c1);
+  // wrap/unwrap
+  const c2=el('div','card');
+  c2.innerHTML=`<h3>Wrap / Unwrap</h3><div class="sub">1 ENS ⇄ 1 ENS+ · new wraps vest over 30 days</div>`;
+  const f=el('div');
+  f.innerHTML=`<div class="field"><label>Amount (ENS)</label><input id="wrapAmt" type="number" value="100" min="1"></div>`;
+  const btns=el('div');btns.style.display='flex';btns.style.gap='10px';
+  const bw=el('button','btn','Wrap → ENS+'),bu=el('button','btn ghost','Unwrap → ENS');
+  bw.onclick=()=>{const a=+$('#wrapAmt').value||0;if(a<=0||a>S.me.ensUnwrapped)return toast('Wrap','Insufficient ENS balance.','claret');
+    S.me.ensUnwrapped-=a;S.me.ensPlus+=a;S.me.vestedPct=Math.max(0,Math.round(100*100/(S.me.ensPlus)));S.protocol.wrappedTokens+=a;S.protocol.blocWrapped+=a;
+    toast('Wrap',`Wrapped ${fmt(a)} ENS. New portion vests over 30 days.`);renderTop();renderMain();};
+  bu.onclick=()=>{const a=+$('#wrapAmt').value||0;if(a<=0||a>S.me.ensPlus)return toast('Unwrap','Insufficient ENS+ balance.','claret');
+    S.me.ensPlus-=a;S.me.ensUnwrapped+=a;S.protocol.wrappedTokens-=a;S.protocol.blocWrapped-=a;
+    toast('Unwrap',`Unwrapped ${fmt(a)} ENS+ — feeless, no delay (Covenant C4).`);renderTop();renderMain();};
+  btns.append(bw,bu);f.appendChild(btns);
+  f.appendChild(el('div','note','Wrapping never transfers custody of your principal to anyone; the vault is immutable and has no admin key. Your ENS+ is redeemable 1:1 at any time.'));
+  c2.appendChild(f);
+  g.appendChild(c2);
+  w.appendChild(g);
+  return w;
+}
+function govWeight(){ const m=S.me; const q=Math.sqrt(m.ensPlus); const prov=1+ERA_PART[m.era]/7000*1.0; const cap=0.02*Math.sqrt(S.protocol.wrappedTokens);
+  return Math.min(q*prov, cap*30); }
+
+/* ---------- NAME VAULT ---------- */
+function pNames(){
+  const w=el('div'); w.appendChild(head('Custody · Layer 2','Name Vault',
+    'Wrap .eth names into dual custody — classic registrar (U-721) or NameWrapper (W-1155). Wrapping never changes who resolves the name; the controller is retained and reclaimable to you atomically.'));
+  const c=el('div','card');
+  c.innerHTML=`<div class="card-hd"><h3>Your names</h3><span class="pill mut">${S.names.filter(n=>n.wrapped).length} wrapped · per-owner index</span></div>`;
+  const tb=el('table');
+  tb.innerHTML=`<thead><tr><th>Name</th><th>Era</th><th>Rank</th><th>Expiry</th><th>Protection</th><th></th></tr></thead>`;
+  const body=el('tbody');
+  S.names.forEach(n=>{
+    const tr=el('tr','hoverable');
+    const prot=[n.sentinel?'<span class="pill verd"><span class="dot"></span>Sentinel</span>':'',
+                n.watched?'<span class="pill mut">Watched</span>':'',
+                n.renewTier===3?'<span class="pill gold">Eternal</span>':''].filter(Boolean).join(' ')||'<span class="dim">—</span>';
+    tr.innerHTML=`<td class="mono">${n.label}.eth</td>
+      <td><span class="era-chip era-${n.era}">${ERA_NAMES[n.era]}</span></td>
+      <td class="mono">${n.rank?'#'+n.rank:'—'}</td>
+      <td class="mono ${n.expiryDays<=30?'claret':n.expiryDays<=90?'gold':''}">${n.expiryDays}d</td>
+      <td>${prot}</td>
+      <td class="tnum"><button class="btn sm ghost">Manage</button></td>`;
+    tr.querySelector('button').onclick=()=>{VIEW='sentinel';renderNav();renderMain();};
+    body.appendChild(tr);
+  });
+  tb.appendChild(body);c.appendChild(tb);
+  c.appendChild(el('div','note','Selling or transferring a wrapped name carries none of your civic identity to the buyer — provenance binds to the attestation holder, and the resolver shows empty civic records once the ENS owner and attestation diverge.'));
+  w.appendChild(c);
+  return w;
+}
+
+/* ---------- INTERNAL GOVERNOR ---------- */
+function pGovern(){
+  const w=el('div'); w.appendChild(head('Governance','Internal Governor',
+    'Whale-resistant internal voting: quadratic weight, a 2%-per-identity cap, provenance weighting, and commit-reveal to stop vote-buying. The bloc\'s decision here becomes its single directional vote at the ENS DAO.'));
+  // weight breakdown
+  const wc=el('div','card');wc.style.marginBottom='16px';
+  const m=S.me,q=Math.sqrt(m.ensPlus),prov=(1+ERA_PART[m.era]/7000).toFixed(2),cap=(0.02*Math.sqrt(S.protocol.wrappedTokens)).toFixed(1);
+  wc.innerHTML=`<div class="card-hd"><h3>Your voting weight</h3><span class="pill gold">Quadratic · capped</span></div>
+   <div class="kv">
+     <div class="k">√(ENS+ ${m.ensPlus})</div><div class="v">${q.toFixed(2)}</div>
+     <div class="k">× provenance (${ERA_NAMES[m.era]})</div><div class="v">×${prov}</div>
+     <div class="k">per-identity cap (2%·√supply)</div><div class="v">${cap}</div>
+     <div class="k">effective weight</div><div class="v verd">${govWeight().toFixed(2)}</div>
+   </div><div class="note">The cap flattens whales: a holder with 100× the tokens gets far less than 100× the say. capBps is a fixed genesis parameter set conservatively from the adoption model.</div>`;
+  w.appendChild(wc);
+  // proposals
+  const pc=el('div','card');
+  pc.innerHTML=`<div class="card-hd"><h3>Proposals</h3><span class="pill mut">Delay → Commit → Reveal → Closed</span></div>`;
+  S.proposals.forEach(p=>pc.appendChild(proposalRow(p)));
+  w.appendChild(pc);
+  // silent policy
+  const sp=el('div','card');sp.style.marginTop='16px';
+  sp.innerHTML=`<h3>Silent-weight policy</h3><div class="sub">How your weight behaves when you don't vote (recorded now; v1 treats all silent weight as abstain)</div>`;
+  const sel=el('select');['Abstain when silent (Policy B)','Follow Standing Orders (Policy A — reserved)'].forEach((o,i)=>{const op=el('option',null,o);op.value=i;sel.appendChild(op);});
+  const spf=el('div','field');spf.appendChild(sel);sp.appendChild(spf);
+  sp.appendChild(el('div','note','Policy A/B cannot be split externally (the ENS governor has no fractional voting), so it is a reserved forward hook. v1 never speaks for the silent.'));
+  w.appendChild(sp);
+  return w;
+}
+const PHASES=['Delay','Commit','Reveal','Closed'];
+function proposalRow(p){
+  const r=el('div','lrow');
+  const total=p.for+p.against+p.abstain;
+  r.innerHTML=`<div class="lrow-hd"><div><div class="ttl">#${p.id} · ${p.title}</div>
+     <div style="margin-top:5px"><span class="pill mut">${p.kind}</span> <span class="pill ${p.tier>=2?'gold':'mut'}">Tier T${p.tier}</span> <span class="pill ${p.phase===3?'mut':'verd'}"><span class="dot"></span>${PHASES[p.phase]}</span></div></div></div>
+   <div class="phase-track">${[0,1,2,3].map(i=>`<div class="phase-seg ${i<p.phase?'done':i===p.phase?'now':''}"></div>`).join('')}</div>
+   <div class="tally"><span class="verd">For ${fmt(p.for)}</span><span class="claret">Against ${fmt(p.against)}</span><span class="muted">Abstain ${fmt(p.abstain)}</span>${p.mine!=null?`<span class="gold">· your ${['For','Against','Abstain'][p.mine]} cast</span>`:''}</div>`;
+  const act=el('div');act.style.marginTop='10px';act.style.display='flex';act.style.gap='8px';act.style.flexWrap='wrap';
+  if(p.phase===0){ const b=el('button','btn sm ghost','Advance to Commit');b.onclick=()=>{p.phase=1;toast('Proposal',`#${p.id} entered the Commit phase.`);renderMain();};act.appendChild(b); }
+  else if(p.phase===1){
+    ['For','Against','Abstain'].forEach((lab,i)=>{const b=el('button','btn sm'+(i===2?' ghost':''),'Commit '+lab);
+      b.onclick=()=>{S.commits[p.id]={support:i,salt:Math.random().toString(36).slice(2,8)};toast('Commit',`Sealed a hidden ${lab} vote on #${p.id} (commit-reveal).`,'');p.phase=2;renderMain();};act.appendChild(b);});
+  } else if(p.phase===2){
+    const cm=S.commits[p.id];
+    const b=el('button','btn sm',cm?'Reveal my vote':'Reveal (demo For)');
+    b.onclick=()=>{const s=cm?cm.support:0;const wgt=Math.round(govWeight()*1000);
+      p[['for','against','abstain'][s]]+=wgt;p.mine=s;p.phase=3;
+      toast('Reveal',`Revealed ${['For','Against','Abstain'][s]} on #${p.id} (+${fmt(wgt)} weight).`);renderNav();renderMain();};
+    act.appendChild(b);
+  } else { act.appendChild(el('span','note','Closed — result folds into the bloc\'s directional cast at the ENS DAO.')); }
+  r.appendChild(act);
+  return r;
+}
+
+/* ---------- CONSTITUTION ---------- */
+function pConstitution(){
+  const w=el('div');w.appendChild(head('Governance','Constitution & Modules',
+    'The Layer-0 ENS Constitution adopted verbatim, ENSPLUS Articles V–X, the Standing Orders that classify external matters, and the Module Registry whose charters are enforced by on-chain machine checks.'));
+  const g=el('div','grid g2');
+  const ac=el('div','card');ac.innerHTML=`<h3>Articles</h3><div class="sub">Immutable unless marked ratifiable</div>`;
+  S.articles.forEach(a=>{const r=el('div','lrow');r.style.marginBottom='9px';r.style.padding='11px 14px';
+    r.innerHTML=`<div class="lrow-hd" style="margin:0"><div><div class="ttl" style="font-size:14px">Article ${a.n} · ${a.t}</div><div class="muted" style="font-size:12px;margin-top:2px">${a.s}</div></div><span class="pill ${a.locked?'mut':'gold'}">${a.locked?'Immutable':'Ratifiable'}</span></div>`;
+    ac.appendChild(r);});
+  g.appendChild(ac);
+  const right=el('div');
+  const so=el('div','card');so.innerHTML=`<h3>Standing Orders</h3><div class="sub">Pre-committed positions; most-protective wins conflicts</div>`;
+  const st=el('table');st.innerHTML='<thead><tr><th>Order</th><th>Directive</th><th>Class</th></tr></thead>';
+  const sb=el('tbody');S.standingOrders.forEach(o=>{const tr=el('tr');tr.innerHTML=`<td class="mono verd">${o.id}</td><td>${o.t}</td><td><span class="pill ${o.class==='Protective'?'verd':'mut'}">${o.class}</span></td>`;sb.appendChild(tr);});
+  st.appendChild(sb);so.appendChild(st);right.appendChild(so);
+  const mo=el('div','card');mo.style.marginTop='16px';mo.innerHTML=`<h3>Module Registry</h3><div class="sub">Charter-gated; permissions + forfeitures byte-hash enforced on-chain</div>`;
+  const mt=el('table');mt.innerHTML='<thead><tr><th>Module</th><th>Permissions</th><th>Status</th></tr></thead>';
+  const mb=el('tbody');S.modules.forEach(md=>{const tr=el('tr');tr.innerHTML=`<td class="mono">${md.id}</td><td>${md.perms.map(p=>`<span class="pill mut">${p}</span>`).join(' ')}</td><td><span class="pill ${md.status==='Chartered'?'verd':'gold'}">${md.status}</span></td>`;mb.appendChild(tr);});
+  mt.appendChild(mb);mo.appendChild(mt);right.appendChild(mo);
+  g.appendChild(right);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- BLOC VOICE ---------- */
+function pBloc(){
+  const w=el('div');w.appendChild(head('Governance','Bloc Voice — the ENS DAO',
+    'The bloc casts a single directional vote at the real ENS governor (GovernorCountingSimple — no fractional voting). It mirrors the internal decision, or abstains when the internal vote is divided below the confidence threshold. It never fabricates a position.'));
+  const g=el('div','grid g-2-1');
+  // live ens proposals mirror
+  const lc=el('div','card');lc.innerHTML=`<div class="card-hd"><h3>ENS DAO proposals — bloc cast</h3><span class="pill verd"><span class="dot"></span>Directional</span></div>`;
+  const ens=[
+    {id:'ENS-EP6.3',t:'Endowment intent-free spending rate-limit',so:'SO-3',dir:'For',conf:92},
+    {id:'ENS-EP6.4',t:'Working-group funding renewal',so:null,dir:'For',conf:71},
+    {id:'ENS-EP6.5',t:'Contested: registrar controller change',so:'SO-1',dir:'Against',conf:88},
+    {id:'ENS-EP6.6',t:'Undecidable procedural amendment',so:'SO-7',dir:'Abstain',conf:0},
+  ];
+  ens.forEach(e=>{const r=el('div','lrow');r.style.padding='12px 14px';r.style.marginBottom='9px';
+    const dc=e.dir==='For'?'verd':e.dir==='Against'?'claret':'mut';
+    r.innerHTML=`<div class="lrow-hd" style="margin:0 0 6px"><div><div class="ttl" style="font-size:14px">${e.id} · ${e.t}</div>
+      <div style="margin-top:4px">${e.so?`<span class="pill verd">${e.so}</span>`:'<span class="pill mut">by internal vote</span>'} <span class="pill mut">confidence ${e.conf}%</span></div></div>
+      <span class="pill ${dc}"><span class="dot"></span>Cast ${e.dir}</span></div>
+      <div class="note" style="margin:0">${e.dir==='Abstain'?'Divided below the confidence threshold → abstain (never guesses).':`Mirrors the ${e.so?'Standing Order':'internal decision'}; full bloc weight in one direction.`}</div>`;
+    lc.appendChild(r);});
+  g.appendChild(lc);
+  // power gauge + threshold ladder
+  const right=el('div','card');right.innerHTML=`<h3>Bloc power</h3><div class="sub">Wrapped ENS → governance impact</div>`;
+  right.appendChild(blocGauge(S.protocol.blocWrapped));
+  const ladder=el('div');ladder.style.marginTop='10px';
+  THRESHOLDS.forEach(t=>{const on=S.protocol.blocWrapped>=t.at;
+    ladder.appendChild(el('div','stat-row',`<span class="k">${on?'◆':'◇'} ${t.name}</span><span class="v ${on?'verd':'dim'}">${fmt(t.at)}</span>`));});
+  right.appendChild(ladder);
+  right.appendChild(el('div','note',`Theory of change: raise the cost of capture and catalyze turnout — not out-hold the founder. Dominance needs several million ENS, a long game grown through utility.`));
+  g.appendChild(right);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- RENEWAL POOL ---------- */
+function pRenewal(){
+  const w=el('div');w.appendChild(head('Name Protection','Renewal Pool',
+    'A commons that keeps names alive. Coverage scales by tier: Ember (raffle), Kindled (matching), Steady (keeper batches), Eternal (guaranteed, with a tithe on surplus). Randomness uses RANDAO; no external oracle.'));
+  const TIERS=[['Ember','CR < 0.25','Raffle — random enrolled names fully renewed','claret'],
+    ['Kindled','0.25 – 0.5','Matching — you pay a year, the pool adds one','gold'],
+    ['Steady','0.5 – 1.0','Keeper batches renew on schedule','verd'],
+    ['Eternal','≥ 1.0','Coverage guaranteed; surplus tithed to the commons','verd']];
+  const g=el('div','grid g2');
+  const tc=el('div','card');tc.innerHTML=`<h3>Coverage tiers</h3><div class="sub">Set by the pool's coverage ratio (CR)</div>`;
+  TIERS.forEach((t,i)=>{const r=el('div','lrow');r.style.padding='11px 13px';r.style.marginBottom='8px';
+    r.innerHTML=`<div class="lrow-hd" style="margin:0"><div><span class="pill ${t[3]}">${t[0]}</span> <span class="mono muted" style="font-size:11px">${t[1]}</span><div class="muted" style="font-size:12px;margin-top:4px">${t[2]}</div></div></div>`;
+    tc.appendChild(r);});
+  g.appendChild(tc);
+  const ec=el('div','card');ec.innerHTML=`<h3>Your enrolled names</h3><div class="sub">Banked years accrue toward renewal immortality</div>`;
+  const tb=el('table');tb.innerHTML='<thead><tr><th>Name</th><th>Tier</th><th>Banked</th><th></th></tr></thead>';
+  const body=el('tbody');
+  S.names.forEach(n=>{const tr=el('tr','hoverable');const tn=['Ember','Kindled','Steady','Eternal'][n.renewTier];const tcl=['claret','gold','verd','verd'][n.renewTier];
+    tr.innerHTML=`<td class="mono">${n.label}.eth</td><td><span class="pill ${tcl}">${tn}</span></td><td class="mono">${n.banked}y</td>
+      <td class="tnum"><button class="btn sm ghost">Bank +1y</button></td>`;
+    tr.querySelector('button').onclick=()=>{n.banked++;if(n.banked>=5&&n.renewTier<3)n.renewTier++;toast('Renewal',`Banked +1 year on ${n.label}.eth (${n.banked}y total).`);renderMain();};
+    body.appendChild(tr);});
+  tb.appendChild(body);ec.appendChild(tb);
+  ec.appendChild(el('div','note','Never phrased as "will never expire" — banked years and pool coverage make lapse increasingly unlikely, not impossible.'));
+  g.appendChild(ec);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- SENTINEL LOCK ---------- */
+function pSentinel(){
+  const w=el('div');w.appendChild(head('Name Protection','Sentinel Lock',
+    'Your own opt-in theft lock. Arm a name with a transfer/unwrap timelock and M-of-N guardians; a panic freeze halts even a matured release. The protocol never imposes this — an unarmed name is never gated, and disarming is itself timelocked.'));
+  const c=el('div','card');
+  c.innerHTML=`<div class="card-hd"><h3>Protected names</h3><span class="covenant">◆ Owner-imposed, never the protocol's</span></div>`;
+  const tb=el('table');tb.innerHTML='<thead><tr><th>Name</th><th>Status</th><th>Timelock</th><th>Guardians</th><th></th></tr></thead>';
+  const body=el('tbody');
+  S.names.forEach(n=>{
+    const tr=el('tr','hoverable');
+    const s=n.sentinel;
+    const status=!s?'<span class="pill mut">Unarmed</span>':s.frozen?'<span class="pill claret"><span class="dot"></span>Frozen</span>':'<span class="pill verd"><span class="dot"></span>Armed</span>';
+    tr.innerHTML=`<td class="mono">${n.label}.eth</td><td>${status}</td>
+      <td class="mono">${s?s.timelock+'d':'—'}</td><td class="mono">${s?s.threshold+'-of-'+s.guardians:'—'}</td>
+      <td class="tnum"></td>`;
+    const cell=tr.querySelector('.tnum');
+    if(!s){const b=el('button','btn sm','Arm');b.onclick=()=>armDialog(n);cell.appendChild(b);}
+    else{
+      const bf=el('button','btn sm danger',s.frozen?'Unfreeze':'Panic freeze');
+      bf.onclick=()=>{s.frozen=!s.frozen;toast('Sentinel',s.frozen?`${n.label}.eth FROZEN — all releases halted until guardians approve.`:`${n.label}.eth unfrozen by guardian threshold.`,s.frozen?'claret':'');renderMain();};
+      const bd=el('button','btn sm ghost','Disarm');
+      bd.onclick=()=>{toast('Sentinel',`Disarm requested for ${n.label}.eth — matures after the ${s.timelock}-day timelock (guardians may veto).`,'gold');};
+      cell.append(bf,bd);
+    }
+    body.appendChild(tr);
+  });
+  tb.appendChild(body);c.appendChild(tb);
+  c.appendChild(el('div','note','Verified by a stateful fuzz: an armed name never leaves — by transfer or unwrap — without a matured, matching, unfrozen release, and an unarmed owner is never gated (invariant I10).'));
+  w.appendChild(c);
+  return w;
+}
+function armDialog(n){
+  n.sentinel={timelock:7,guardians:2,threshold:2,frozen:false};
+  toast('Sentinel',`${n.label}.eth armed — 7-day timelock, 2-of-2 guardians. Your exit is only ever delayed by your own lock.`);
+  renderMain();
+}
+
+/* ---------- WATCHTOWER ---------- */
+function pWatchtower(){
+  const w=el('div');w.appendChild(head('Name Protection','Watchtower',
+    'Permissionless expiry surveillance. Every watched name escalates through a fixed ladder as expiry nears; keepers checkpoint the state as an immutable audit trail. Pure observation — it holds nothing and gates nothing.'));
+  const levels=[['Calm','>90d','mut'],['Notice','≤90d','verd'],['Warning','≤30d','gold'],['Critical','≤7d','claret'],['Expired','lapsed','claret']];
+  function levelOf(d){ if(d<=0)return 4; if(d<=7)return 3; if(d<=30)return 2; if(d<=90)return 1; return 0; }
+  const c=el('div','card');c.innerHTML=`<div class="card-hd"><h3>Watched names</h3><span class="pill mut">${S.names.filter(n=>n.watched).length} watched</span></div>`;
+  S.names.filter(n=>n.watched).forEach(n=>{
+    const lv=levelOf(n.expiryDays);
+    const r=el('div','lrow');r.style.padding='13px 15px';
+    r.innerHTML=`<div class="lrow-hd" style="margin-bottom:8px"><div class="ttl" style="font-size:14px">${n.label}.eth</div>
+      <span class="pill ${levels[lv][2]}"><span class="dot"></span>${levels[lv][0]} · ${n.expiryDays}d</span></div>
+      <div class="wt-ladder">${levels.map((L,i)=>`<div class="wt-step ${i<=lv?'on '+L[2]:''}" style="${i<=lv?'color:var(--'+(L[2]==='mut'?'muted':L[2])+')':''}">${L[0]}</div>`).join('')}</div>`;
+    c.appendChild(r);
+  });
+  c.appendChild(el('div','note','levelFor is a monotonic step function (property-tested): urgency only ever rises as expiry nears; a checkpoint records escalation and, on lapse, anchors a 90-day resurrection window.'));
+  w.appendChild(c);
+  return w;
+}
+
+/* ---------- IDENTITY / PROVENANCE ---------- */
+function pIdentity(){
+  const w=el('div');w.appendChild(head('Identity & Trust','Citizen & Provenance',
+    'A soulbound Citizen identity with its own token-bound account, and a provenance attestation that proves your name\'s era and rank via Merkle proof. Provenance costs history — you cannot manufacture a 2017 name.'));
+  const r=reputation(S.me);
+  const g=el('div','grid g-2-1');
+  const left=el('div','card');left.innerHTML=`<div class="card-hd"><h3>Provenance</h3><span class="pill gold">Merkle-attested</span></div>`;
+  left.appendChild(el('div','kv',`
+    <div class="k">Name</div><div class="v">${S.ens}</div>
+    <div class="k">Era</div><div class="v"><span class="era-chip era-${S.me.era}">${ERA_NAMES[S.me.era]}</span></div>
+    <div class="k">Ordinal rank</div><div class="v">#${S.me.rank} · TOP_100</div>
+    <div class="k">Continuous ownership</div><div class="v verd">Attested</div>
+    <div class="k">Airdrop franchise</div><div class="v">Yes (pre-2021-10-31)</div>
+    <div class="k">Attestation root</div><div class="v mono dim">0xa47c…7f3b</div>`));
+  left.appendChild(el('div','note','Era 0 (Prepunk) means registered on or before 2017-06-23 — a real value, never an "unset" sentinel. The rank tier is the single canonical source shared by the reputation engine.'));
+  g.appendChild(left);
+  // seal + humanity
+  const right=el('div','card');right.innerHTML=`<h3>Citizen seal</h3><div class="sub">Soulbound · ERC-6551 account</div>`;
+  right.appendChild(sealBlock(S.me.era,r.rep,S.me.human));
+  const hb=el('div');hb.style.marginTop='6px';
+  if(S.me.human){hb.innerHTML=`<div class="covenant" style="width:100%;justify-content:center">◆ Verified unique human</div>`;}
+  else{const b=el('button','btn gold','Prove humanity (zkPassport)');b.style.width='100%';
+    b.onclick=()=>{S.me.human=true;toast('Humanity','Verified as a unique human — privacy-preserving zk nullifier stored, never your passport. +2000 reputation.','gold');renderNav();renderMain();};
+    hb.appendChild(b);hb.appendChild(el('div','note','One passport ↔ one identity, rebindable on wallet rotation. Ownerless — only your claim writes.'));}
+  right.appendChild(hb);
+  g.appendChild(right);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- TRUST / REPUTATION ---------- */
+function pTrust(){
+  const w=el('div');w.appendChild(head('Identity & Trust','Reputation',
+    'L1-native, sybil-resistant civic reputation. Every input costs history or sustained effort a fresh wallet cannot fake — so a sybil scores exactly 1.00×. Bounded to [1.00×, 1.25×]; you are never punished for participating.'));
+  const r=reputation(S.me);
+  const g=el('div','grid g-2-1');
+  const bc=el('div','card');bc.innerHTML=`<div class="card-hd"><h3>Reputation breakdown</h3><span class="pill verd">${r.rep} / 10000 · ${r.mult.toFixed(3)}×</span></div>`;
+  const comps=[
+    ['Provenance',r.p,4000,'era + rank — the apex anti-sybil signal','gold'],
+    ['Tenure',r.te,2500,'time wrapped + banked years','verd'],
+    ['Participation',r.pa,3000,'consistency + volume + credits','verd'],
+    ['Category',r.c,500,'algorithmic club membership','mut'],
+  ];
+  comps.forEach(([name,score,weight,desc,cl])=>{
+    const contrib=Math.round(score*weight/TW.SCALE);
+    const row=el('div');row.style.marginBottom='13px';
+    row.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
+       <span><b>${name}</b> <span class="muted" style="font-size:11.5px">${desc}</span></span>
+       <span class="mono ${cl}">${score} × ${(weight/100)}% = +${contrib}</span></div>
+       <div class="meter ${cl==='gold'?'gold':''}" style="margin-top:6px"><span style="width:${score/100}%"></span></div>`;
+    bc.appendChild(row);
+  });
+  if(S.me.human){const row=el('div');row.style.marginBottom='4px';
+    row.innerHTML=`<div style="display:flex;justify-content:space-between"><span><b class="verd">Humanity bonus</b> <span class="muted" style="font-size:11.5px">verified unique human</span></span><span class="mono verd">+${TW.HUMAN}</span></div>`;bc.appendChild(row);}
+  bc.appendChild(el('hr','hair'));
+  bc.appendChild(el('div','stat-row',`<span class="k">Reputation</span><span class="v verd" style="font-size:16px">${r.rep} / 10000</span>`));
+  bc.appendChild(el('div','stat-row',`<span class="k">Trust multiplier</span><span class="v gold" style="font-size:16px">${r.mult.toFixed(3)}×</span>`));
+  g.appendChild(bc);
+  // sybil comparison
+  const sc=el('div','card');sc.innerHTML=`<h3>Sybil resistance</h3><div class="sub">Why a fresh wallet can't fake it</div>`;
+  const sybil=reputation({era:3,rank:0,attested:false,tenureDays:0,banked:0,epochsActive:0,epochsSince:0,credits:0,categoryBits:0,human:false});
+  sc.appendChild(el('div','kv',`
+    <div class="k">Fresh sybil wallet</div><div class="v">${sybil.rep} → ${sybil.mult.toFixed(2)}×</div>
+    <div class="k">Bought 500 followers</div><div class="v">1.00× (no effect)</div>
+    <div class="k">You (${ERA_NAMES[S.me.era]}, attested)</div><div class="v verd">${r.rep} → ${r.mult.toFixed(2)}×</div>`));
+  sc.appendChild(el('div','note','No social graph, no Base, no third party — the signal is rebuilt entirely from primitives ENSPLUS owns on mainnet. You can buy 500 followers in an afternoon; you cannot buy a 2017 registration or three years of tenure.'));
+  const tog=el('div');tog.style.marginTop='12px';
+  const b=el('button','btn sm ghost',S.me.human?'Reputation includes humanity':'Add humanity (+2000)');
+  b.disabled=S.me.human;b.onclick=()=>{VIEW='identity';renderNav();renderMain();};
+  tog.appendChild(b);sc.appendChild(tog);
+  g.appendChild(sc);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- CIVIC RESOLVER ---------- */
+function pResolver(){
+  const w=el('div');w.appendChild(head('Identity & Trust','Civic Resolver',
+    'A complete, ownerless ENS resolver — forward and reverse. It surfaces civic identity as ordinary records any ENS app can read, resolves an address back to its primary name (EIP-181), and verifies that a linked label truly belongs to its node. Normalization stays client-side (ENSIP-15); on-chain, labels are opaque hashes.'));
+  const r=reputation(S.me);
+  const label=S.me.linkedLabel, ensName=S.ens;
+
+  /* --- row 1: forward + reverse resolution --- */
+  const g1=el('div','grid g2');
+  // forward
+  const fc=el('div','card');
+  fc.innerHTML=`<div class="card-hd"><h3>Forward resolution</h3><span class="pill verd"><span class="dot"></span>name → data</span></div>`;
+  fc.appendChild(el('div','kv',`
+    <div class="k">${ensName}</div><div class="v"></div>
+    <div class="k">addr</div><div class="v">${short(S.addr)}</div>
+    <div class="k">addr(coinType 60)</div><div class="v">${short(S.addr)}</div>
+    <div class="k">text · avatar</div><div class="v dim">eip155:1/…</div>
+    <div class="k">contenthash</div><div class="v dim">—</div>`));
+  fc.appendChild(el('div','note','EIP-137 addr, ENSIP-9 multicoin, EIP-634 text, EIP-1577 contenthash — plus the computed ensplus.* civic keys below. addr defaults to the node\'s controller.'));
+  g1.appendChild(fc);
+  // reverse (EIP-181)
+  const rc=el('div','card');
+  rc.innerHTML=`<div class="card-hd"><h3>Reverse resolution</h3><span class="pill gold"><span class="dot"></span>address → name · EIP-181</span></div>`;
+  rc.appendChild(el('div','kv',`
+    <div class="k">${short(S.addr)}</div><div class="v"></div>
+    <div class="k">name()</div><div class="v verd">${S.me.primaryName||'<span class="dim">— unset</span>'}</div>
+    <div class="k">forward-verified</div><div class="v">${S.me.primaryName?'<span class="verd">✓ matches addr</span>':'<span class="dim">—</span>'}</div>`));
+  const rf=el('div');rf.style.marginTop='12px';
+  rf.innerHTML=`<div class="field"><label>Set primary name (your addr.reverse)</label><input id="revName" type="text" value="${S.me.primaryName||''}" placeholder="yourname.eth"></div>`;
+  const rb=el('button','btn sm','Set primary name');
+  rb.onclick=()=>{const v=$('#revName').value.trim();S.me.primaryName=v;
+    toast('Reverse record',v?`Primary name set to ${v} on your addr.reverse node.`:'Primary name cleared.','gold');renderMain();};
+  rf.appendChild(rb);
+  rf.appendChild(el('div','note','You own your own &lt;addr&gt;.addr.reverse node, so only you can set this — the same node-owner gate as every other write. The resolver now serves both directions.'));
+  rc.appendChild(rf);
+  g1.appendChild(rc);
+  w.appendChild(g1);
+
+  /* --- row 2: civic records + profile card --- */
+  const g2=el('div','grid g-2-1');g2.style.marginTop='16px';
+  const cc=el('div','card');cc.innerHTML=`<div class="card-hd"><h3>Civic records · ${ensName}</h3><span class="pill verd">Live · computed</span></div>`;
+  const recs=[
+    ['ensplus.era',ERA_NAMES[S.me.era]],['ensplus.rank','#'+S.me.rank],
+    ['ensplus.reputation',r.rep+' / 10000'],['ensplus.multiplier',r.mult.toFixed(3)+'×'],
+    ['ensplus.banked-years',S.me.banked+'y'],['ensplus.human',S.me.human?'true':'false'],
+  ];
+  const tb=el('table');tb.innerHTML='<thead><tr><th>Key</th><th>Value (computed)</th></tr></thead>';
+  const body=el('tbody');recs.forEach(([k,v])=>{const tr=el('tr');tr.innerHTML=`<td class="mono verd">${k}</td><td class="mono">${v}</td>`;body.appendChild(tr);});
+  const off=el('tr');off.innerHTML=`<td class="mono gold">ensplus.offchain.guild-roster</td><td class="mono dim">CCIP-read → gateway</td>`;body.appendChild(off);
+  tb.appendChild(body);cc.appendChild(tb);
+  cc.appendChild(el('div','note','Reserved ensplus.* keys are read-only and computed on-chain; user records use a recordVersion counter so a sale or unwrap clears them with no gas-costly deletes.'));
+  g2.appendChild(cc);
+  const pc=el('div','card');pc.innerHTML=`<h3>Profile card</h3><div class="sub">Self-contained SVG · injection-safe</div>`;
+  pc.appendChild(profileCard());
+  pc.appendChild(el('div','note','Every field XML-escaped — hostile records cannot inject into the SVG.'));
+  g2.appendChild(pc);
+  w.appendChild(g2);
+
+  /* --- row 3: link binding + advertised interfaces --- */
+  const g3=el('div','grid g2');g3.style.marginTop='16px';
+  const lb=el('div','card');lb.innerHTML=`<div class="card-hd"><h3>Label ↔ node binding</h3><span class="covenant">◆ Verified</span></div>`;
+  lb.appendChild(el('div','kv',`
+    <div class="k">ENS node</div><div class="v mono dim">${hashish(ensName)}</div>
+    <div class="k">linked label</div><div class="v mono">"${label}"</div>
+    <div class="k">keccak256(label)</div><div class="v mono dim">${hashish(label)}</div>
+    <div class="k">namehash("eth")</div><div class="v mono dim">0x93cd…c4ae</div>`));
+  lb.appendChild(el('div','note',`link() enforces <span class="mono verd">node == keccak256(namehash("eth"), keccak256(label))</span> — a .eth 2LD cannot be bound to a mismatched label. Selling ${ensName} carries none of this civic identity to the buyer.`));
+  g3.appendChild(lb);
+  const ic=el('div','card');ic.innerHTML=`<h3>Advertised interfaces</h3><div class="sub">ERC-165 supportsInterface</div>`;
+  const ifaces=[['0x01ffc9a7','ERC-165'],['0x3b3b57de','addr · EIP-137'],['0xf1cb7e06','addr coin · ENSIP-9'],
+    ['0x59d1d43c','text · EIP-634'],['0xbc1c58d1','contenthash · EIP-1577'],['0x691f3431','name · EIP-181',true],['0x9061b923','resolve · ENSIP-10']];
+  const ib=el('div');ib.style.display='flex';ib.style.flexWrap='wrap';ib.style.gap='7px';
+  ifaces.forEach(([id,nm,isNew])=>{const p=el('span','pill '+(isNew?'gold':'mut'));p.innerHTML=`${isNew?'<span class="dot"></span>':''}${nm} <span class="dim" style="font-size:9px">${id}</span>`;ib.appendChild(p);});
+  ic.appendChild(ib);
+  ic.appendChild(el('div','note','name · EIP-181 (gold) is the reverse-resolution interface — added so the resolver works both directions, dispatched on-chain through ENSIP-10 resolve() as well.'));
+  g3.appendChild(ic);
+  w.appendChild(g3);
+
+  /* --- normalization strip --- */
+  const norm=el('div','card');norm.style.marginTop='16px';
+  norm.innerHTML=`<h3>Normalization &amp; the legacy lane</h3>
+    <p class="muted" style="font-size:12.5px;margin:6px 0 0;max-width:80ch">On-chain, a name is only ever a <span class="mono">keccak256</span> preimage — labels are stored and hashed as registered, never normalized (matching legacy ENS and the NameWrapper). ENSIP-15 normalization is applied <b class="verd">client-side</b> before hashing, exactly as ENS does it. Legacy or non-normalizable names still key by their registered labelhash (the legacy lane); homoglyph risk is mitigated at the display layer and by the Watchtower confusable watchlist.</p>`;
+  w.appendChild(norm);
+  return w;
+}
+function hashish(s){ /* deterministic short pseudo-hash for the demo display */
+  let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
+  const hex=h.toString(16).padStart(8,'0');return '0x'+hex.slice(0,4)+'…'+hex.slice(4,8); }
+
+/* ---------- PARTICIPATION CREDITS (built · audit scope) ---------- */
+function pCredits(){
+  const w=el('div');w.appendChild(head('Identity & Trust','Participation Credits',
+    `A non-transferable record of showing up. Credits accrue as you participate and feed the participation component of your reputation. They are minted only by chartered modules holding the P_CREDIT permission — never by an admin — and retiring your Citizen stops minting.`));
+  w.appendChild(banner('info','Built · in audit scope',
+    `This layer is implemented and tested. In the demo, earning is simulated; on-chain, credits are minted at runtime by a chartered module gated on the P_CREDIT permission, and are read live by the reputation engine.`));
+  const g=el('div','grid g-2-1');
+  // balance + earn/retire
+  const bc=el('div','card');
+  bc.innerHTML=`<div class="card-hd"><h3>Your credits</h3><span class="pill ${S.me.citizenRetired?'mut':'verd'}"><span class="dot"></span>${S.me.citizenRetired?'Retired — minting stopped':'Active'}</span></div>
+    <div class="big verd">${fmt(S.me.credits)}<span class="u">credits</span></div>`;
+  bc.appendChild(el('div','note','Credits are one of three participation signals (with consistency and volume); 1000 credits saturates that portion of the score.'));
+  const act=el('div');act.style.marginTop='14px';act.style.display='flex';act.style.gap='8px';act.style.flexWrap='wrap';
+  const be=el('button','btn sm','Simulate: reveal a vote (+500)');
+  be.disabled=S.me.citizenRetired;
+  be.onclick=()=>{S.me.credits+=500;S.creditLedger.unshift({epoch:S.protocol.epoch,action:'Revealed a vote',amt:500});
+    toast('Credits','+500 credits minted by the participation module (P_CREDIT).');renderMain();};
+  const br=el('button','btn sm danger',S.me.citizenRetired?'Citizen retired':'Retire Citizen');
+  br.disabled=S.me.citizenRetired;
+  br.onclick=()=>{S.me.citizenRetired=true;toast('Citizen','Citizen retired — credit minting stops. Existing credits and reputation remain.','claret');renderMain();};
+  act.append(be,br);bc.appendChild(act);
+  g.appendChild(bc);
+  // ledger
+  const lc=el('div','card');lc.innerHTML=`<h3>Credit ledger</h3><div class="sub">How your credits accrued</div>`;
+  const tb=el('table');tb.innerHTML='<thead><tr><th>Epoch</th><th>Action</th><th class="tnum">Credits</th></tr></thead>';
+  const body=el('tbody');S.creditLedger.forEach(e=>{const tr=el('tr');tr.innerHTML=`<td class="mono">#${e.epoch}</td><td>${e.action}</td><td class="tnum verd">+${fmt(e.amt)}</td>`;body.appendChild(tr);});
+  tb.appendChild(body);lc.appendChild(tb);
+  g.appendChild(lc);
+  w.appendChild(g);
+  return w;
+}
+
+/* ---------- FOLLOW GRAPH (optional · reader built · not load-bearing) ---------- */
+function pSocial(){
+  const w=el('div');w.appendChild(head('Community','Follow Graph',
+    `An optional social layer. ENSPLUS can read the Ethereum Follow Protocol (EFP) graph directly from Base — no hosted API — and count follows among provenance-anchored citizens. It is deliberately NOT load-bearing: your reputation and standing do not depend on it.`));
+  w.appendChild(banner('info','Optional · reader built · not load-bearing',
+    `The on-chain EFP reader ships in the ensplus-utils SDK and survives the ethid.org wind-down (EFP data lives on Base, not a hosted service). But the trust signal was rebuilt L1-native precisely so no follow graph is required — this panel is an enhancement, shown here with demo data. Live data needs a Base RPC. Only follows AMONG anchored citizens count, so sybil rings and bought followers score zero.`));
+  const g=el('div','grid g-2-1');
+  const gc=el('div','card');gc.innerHTML=`<div class="card-hd"><h3>Anchored citizen graph</h3><span class="pill mut">follows among attested members</span></div>`;
+  gc.appendChild(socialGraph());
+  gc.innerHTML+=`<div class="glegend">
+    <span><span class="dotc" style="background:var(--gold)"></span>Prepunk era</span>
+    <span><span class="dotc" style="background:var(--verd)"></span>Auction</span>
+    <span><span class="dotc" style="background:var(--muted)"></span>Permanent / Modern</span>
+    <span><span class="dotc" style="background:var(--bone)"></span>You</span></div>`;
+  g.appendChild(gc);
+  // your follows / inbound
+  const yc=el('div','card');
+  const inbound=S.social.edges.filter(([,t])=>t===0).map(([f])=>S.social.nodes[f].name);
+  const outbound=S.social.edges.filter(([f])=>f===0).map(([,t])=>S.social.nodes[t].name);
+  yc.innerHTML=`<h3>Your edges</h3><div class="sub">only anchored citizens carry weight</div>`;
+  yc.appendChild(el('div','kv',`
+    <div class="k">followers (anchored)</div><div class="v verd">${inbound.length}</div>
+    <div class="k">following (anchored)</div><div class="v">${outbound.length}</div>`));
+  const flist=el('div');flist.style.marginTop='10px';
+  flist.innerHTML=`<div class="eyebrow" style="margin-bottom:6px">Anchored followers</div>`+
+    (inbound.length?inbound.map(n=>`<div class="stat-row"><span class="k mono">${n}</span><span class="pill verd">counts</span></div>`).join(''):'<div class="dim">none yet</div>');
+  yc.appendChild(flist);
+  yc.appendChild(el('div','note','A bought or sybil follower is not an anchored citizen, so it never enters this count — the same sybil-resistance the L1-native reputation gives, applied to the social graph.'));
+  g.appendChild(yc);
+  w.appendChild(g);
+  return w;
+}
+function socialGraph(){
+  const wrap=el('div');const N=S.social.nodes.length,W=440,H=300,cx=W/2,cy=H/2,rad=115;
+  const pos=S.social.nodes.map((n,i)=>{const a=-Math.PI/2+i/N*2*Math.PI;return[cx+Math.cos(a)*rad,cy+Math.sin(a)*rad];});
+  const eraCol=e=>e===0?'var(--gold)':e===1?'var(--verd)':'var(--muted)';
+  let edges='';
+  S.social.edges.forEach(([f,t])=>{const[x0,y0]=pos[f],[x1,y1]=pos[t];const hot=f===0||t===0;
+    edges+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${hot?'var(--verd-dim)':'var(--line)'}" stroke-width="${hot?1.4:1}" opacity="${hot?.9:.5}"/>`;});
+  let nodes='';
+  S.social.nodes.forEach((n,i)=>{const[x,y]=pos[i];const col=n.me?'var(--bone)':eraCol(n.era);
+    nodes+=`<g class="gnode"><circle cx="${x}" cy="${y}" r="${n.me?11:8}" fill="var(--ink)" stroke="${col}" stroke-width="${n.me?2.5:2}"/>
+      ${n.me?`<circle cx="${x}" cy="${y}" r="15" fill="none" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>`:''}
+      <text x="${x}" y="${y+ (y>cy?24:-16)}" text-anchor="middle" fill="${n.me?'var(--bone)':'var(--muted)'}">${n.name}</text></g>`;});
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%">${edges}${nodes}</svg>`;
+  return wrap;
+}
+
+/* ---------- GUILDS (planned · deferred wave · not built) ---------- */
+function pGuilds(){
+  const w=el('div');w.appendChild(head('Community','Guilds',
+    `Community structure around shared provenance — curated categories, member rosters, and bounties. This is a design preview of a later wave; the contracts are not written yet.`));
+  w.appendChild(banner('planned','Planned · deferred wave · not yet built',
+    `Guilds, the curated-category TCR, and hash-recovery bounties are an explicitly deferred, separately-audited wave — no contracts exist today. They sit outside the current audit scope. What follows is a preview of the intent, not a working feature.`));
+  // how it would work
+  const hc=el('div','card');hc.innerHTML=`<h3>How guilds would work</h3><div class="sub">Three membership sources</div>`;
+  [['Algorithmic','Auto-membership from unspoofable label math — the 999 Club, 10k Club, palindromes, repeating digits. Already computed by LibCategory today.','verd'],
+   ['Attested','Historic cohorts proven by the same Merkle attestation as provenance — e.g. a Prepunk Society.','gold'],
+   ['Curated (TCR)','Human-judgement categories governed by a token-curated registry with bonded challenges — the part that needs new, audited contracts.','mut']]
+   .forEach(([t,d,c])=>{const r=el('div','lrow');r.style.padding='12px 14px';r.style.marginBottom='8px';
+     r.innerHTML=`<div class="lrow-hd" style="margin:0"><div><span class="pill ${c}">${t}</span><div class="muted" style="font-size:12.5px;margin-top:5px">${d}</div></div></div>`;hc.appendChild(r);});
+  w.appendChild(hc);
+  // preview roster (clearly a preview)
+  const pc=el('div','card preview');pc.style.marginTop='16px';pc.style.position='relative';
+  pc.innerHTML=`<div class="stamp">Preview — not live</div><h3>Example guilds</h3><div class="sub">Illustrative only</div>`;
+  const tb=el('table');tb.innerHTML='<thead><tr><th>Guild</th><th>Source</th><th>Members</th></tr></thead>';
+  const body=el('tbody');
+  [['999 Club','Algorithmic','999'],['10k Club','Algorithmic','10,000'],['Palindromes','Algorithmic','~3,400'],
+   ['Prepunk Society','Attested','—'],['Digits','Algorithmic','~9,000']]
+   .forEach(([n,s,m])=>{const tr=el('tr');tr.innerHTML=`<td class="mono">${n}</td><td><span class="pill mut">${s}</span></td><td class="mono dim">${m}</td>`;body.appendChild(tr);});
+  tb.appendChild(body);pc.appendChild(tb);
+  w.appendChild(pc);
+  const note=el('div','card');note.style.marginTop='16px';note.style.borderColor='var(--gold-dim)';
+  note.innerHTML=`<p class="muted" style="font-size:12.5px;margin:0;max-width:82ch">The algorithmic and attested sources reuse machinery that already exists (LibCategory, the AttestorRegistry), so those guilds are largely a read-layer away. The curated TCR — with bonded challenges and human judgement — is the genuinely new surface, and it will ship only after its own audit. Nothing here is active today.</p>`;
+  w.appendChild(note);
+  return w;
+}
+
+function banner(kind,title,body){
+  const b=el('div','banner '+kind);
+  const ic=kind==='planned'?'<path d="M12 8v5M12 16h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>':'<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>';
+  b.innerHTML=`<svg class="bic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>
+    <div><div class="bt">${title}</div>${body}</div>`;
+  return b;
+}
+function icCredit(){return svg('<circle cx="12" cy="12" r="9"/><path d="M15 9.2a3.5 3.5 0 1 0 0 5.6"/>');}
+function icNet(){return svg('<circle cx="6" cy="7" r="2.4"/><circle cx="18" cy="7" r="2.4"/><circle cx="12" cy="17" r="2.4"/><path d="M8 7.6l3 7.4M16 7.6l-3 7.4M8.3 7h7.4"/>');}
+function icGuild(){return svg('<path d="M12 3l7 3v5c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z"/>');}
+
+
+/* =====================  SVG SIGNATURE ELEMENTS  ===================== */
+function sealBlock(era,rep,human){
+  const wrap=el('div','sealwrap');
+  const ring=era===0?'#C6A15B':'#3FA694';
+  const eraNm=ERA_NAMES[era].toUpperCase();
+  wrap.innerHTML=`<svg viewBox="0 0 200 200" width="150" height="150">
+    <circle cx="100" cy="100" r="94" fill="none" stroke="${ring}" stroke-width="2"/>
+    <circle cx="100" cy="100" r="82" fill="none" stroke="#C6A15B" stroke-width="1" stroke-dasharray="1.5 3.5" opacity=".8"/>
+    <defs><path id="arcTop" d="M 100 100 m -70 0 a 70 70 0 1 1 140 0" fill="none"/>
+    <path id="arcBot" d="M 30 100 a 70 70 0 0 0 140 0" fill="none"/></defs>
+    <text font-family="ui-monospace,monospace" font-size="10.5" letter-spacing="3" fill="${ring}">
+      <textPath href="#arcTop" startOffset="50%" text-anchor="middle">ENSPLUS · CONSTITUTIONAL DELEGATE</textPath></text>
+    <text font-family="ui-monospace,monospace" font-size="10" letter-spacing="4" fill="#C6A15B">
+      <textPath href="#arcBot" startOffset="50%" text-anchor="middle">${eraNm} · CITIZEN</textPath></text>
+    <path d="M100 52 L118 88 L100 124 L82 88 Z" fill="none" stroke="#C6A15B" stroke-width="2"/>
+    <circle cx="100" cy="88" r="7" fill="${ring}"/>
+    ${human?'<circle cx="100" cy="88" r="12" fill="none" stroke="#3FA694" stroke-width="1.5"/>':''}
+    <text x="100" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#EDE6D6">${rep}</text>
+    <text x="100" y="164" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" letter-spacing="2" fill="#7C8B8F">REPUTATION</text>
+  </svg>`;
+  return wrap;
+}
+function blocGauge(wrapped){
+  const wrap=el('div','gaugewrap');
+  const W=440,H=210,cx=W/2,cy=180,rad=150;
+  const maxV=5_500_000;
+  const toAng=v=>Math.PI-clamp(v/maxV,0,1)*Math.PI; // 180deg..0deg
+  const pt=(v,r)=>{const a=toAng(v);return[cx+Math.cos(a)*r,cy-Math.sin(a)*r];};
+  const arc=(v0,v1,r,col,wd)=>{const [x0,y0]=pt(v0,r),[x1,y1]=pt(v1,r);const large=0;
+    return `<path d="M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}" fill="none" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/>`;};
+  // colored bands by threshold
+  let bands='';const cols=['#2C7568','#3FA694','#C6A15B','#B4574A','#C6A15B'];
+  const pts=[0,...THRESHOLDS.map(t=>t.at),maxV];
+  for(let i=0;i<pts.length-1;i++){bands+=arc(pts[i],pts[i+1],rad,i===0?'#243238':cols[(i-1)%cols.length]||'#243238',7);}
+  // full track
+  bands=arc(0,maxV,rad,'#243238',7)+arc(0,wrapped,rad,'#3FA694',7);
+  // nick marker
+  const [nx,ny]=pt(NICK,rad+2),[nx2,ny2]=pt(NICK,rad-16);
+  // needle
+  const [hx,hy]=pt(wrapped,rad-24);
+  const tier=blocTier(wrapped);
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%">
+    ${bands}
+    <line x1="${nx}" y1="${ny}" x2="${nx2}" y2="${ny2}" stroke="#B4574A" stroke-width="2"/>
+    <text x="${nx2}" y="${ny2-5}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#B4574A">NICK 3.26M</text>
+    <line x1="${cx}" y1="${cy}" x2="${hx}" y2="${hy}" stroke="#EDE6D6" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="6" fill="#EDE6D6"/>
+    <text x="${cx}" y="${cy-42}" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="#3FA694">${(wrapped/1e6).toFixed(2)}M</text>
+    <text x="${cx}" y="${cy-26}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" letter-spacing="2" fill="#7C8B8F">ENS WRAPPED</text>
+    <text x="${cx}" y="${cy+22}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" letter-spacing="3" fill="#C6A15B">${tier.name.toUpperCase()}</text>
+  </svg>`;
+  return wrap;
+}
+function profileCard(){
+  const r=reputation(S.me);
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const hue=(parseInt('1d3a5f',16)%360);
+  const wrap=el('div');
+  wrap.innerHTML=`<svg viewBox="0 0 440 200" width="100%" style="border:1px solid var(--line);border-radius:6px">
+    <rect width="440" height="200" fill="#131C20"/>
+    <rect x="0" y="0" width="440" height="5" fill="#3FA694"/>
+    <clipPath id="av"><rect x="22" y="30" width="90" height="90" rx="18"/></clipPath>
+    <rect x="22" y="30" width="90" height="90" rx="18" fill="#0E1417"/>
+    <g clip-path="url(#av)"><use href="#sealGlyph" transform="translate(22,30) scale(.9)"/></g>
+    <text x="130" y="52" font-family="Georgia,serif" font-size="22" fill="#EDE6D6">${esc(S.ens)}</text>
+    <circle cx="${130+esc(S.ens).length*11+12}" cy="45" r="8" fill="#3FA694"/>
+    <path d="${'M '+(130+esc(S.ens).length*11+8.5)+' 45 l 2.5 2.5 l 5 -6'}" stroke="#131C20" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="130" y="72" font-family="ui-monospace,monospace" font-size="12" fill="#7C8B8F">${esc(short(S.addr))}</text>
+    <text x="130" y="98" font-family="ui-monospace,monospace" font-size="12" fill="#C6A15B">${ERA_NAMES[S.me.era]} · rank #${S.me.rank}</text>
+    <g transform="translate(130,150)"><text font-family="ui-monospace,monospace" font-size="17" font-weight="700" fill="#EDE6D6">${r.rep}</text><text y="15" font-family="ui-monospace,monospace" font-size="10" fill="#7C8B8F">reputation</text></g>
+    <g transform="translate(240,150)"><text font-family="ui-monospace,monospace" font-size="17" font-weight="700" fill="#3FA694">${r.mult.toFixed(2)}×</text><text y="15" font-family="ui-monospace,monospace" font-size="10" fill="#7C8B8F">multiplier</text></g>
+    <g transform="translate(350,150)"><text font-family="ui-monospace,monospace" font-size="17" font-weight="700" fill="${S.me.human?'#3FA694':'#5A6A6E'}">${S.me.human?'✓':'—'}</text><text y="15" font-family="ui-monospace,monospace" font-size="10" fill="#7C8B8F">human</text></g>
+    <text x="418" y="190" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#3A484C">resolved on-chain · ENSPLUS</text>
+  </svg>`;
+  return wrap;
+}
+
+/* ---- nav icons (inline svg) ---- */
+function svg(p){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">${p}</svg>`;}
+function icOverview(){return svg('<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>');}
+function icVault(){return svg('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M12 9v6"/>');}
+function icName(){return svg('<path d="M4 7h16M4 12h16M4 17h10"/>');}
+function icGov(){return svg('<path d="M12 3v18M5 8l7-4 7 4M5 8v8l7 4 7-4V8"/>');}
+function icDoc(){return svg('<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>');}
+function icBloc(){return svg('<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>');}
+function icFlame(){return svg('<path d="M12 2s5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s2 2 2 4a2 2 0 0 0 2-2c0-3-2-5-2-8z"/>');}
+function icLock(){return svg('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>');}
+function icEye(){return svg('<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>');}
+function icSeal(){return svg('<circle cx="12" cy="10" r="6"/><path d="M8 15l-1 7 5-3 5 3-1-7"/>');}
+function icStar(){return svg('<path d="M12 3l2.5 6H21l-5 4 2 7-6-4-6 4 2-7-5-4h6.5z"/>');}
+function icCard(){return svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>');}
+
+/* ---- boot ---- */
+renderNav();renderTop();renderMain();
+setTimeout(()=>toast('Welcome','ENSPLUS console — a demo of the full stack. Connect the demo wallet to load your identity, then explore each layer.'),500);
+</script>
+</body>
+</html>
