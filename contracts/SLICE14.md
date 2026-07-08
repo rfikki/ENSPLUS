@@ -1,6 +1,6 @@
 # ENSPLUS Contracts — Slice 14: CitizenResolver (civic identity as an ENS resolver)
 
-Verified: 137/137 tests passing (slices 1–14) · solc 0.8.26, optimizer 200, cancun, zero warnings.
+Verified: 146/146 tests passing (slices 1–14 + hardening + resolution) · solc 0.8.26, optimizer 200, cancun, zero warnings.
 
 ## Contents
 - `contracts/core/CitizenResolver.sol` — a standards-conformant, READ-ONLY,
@@ -22,8 +22,14 @@ Verified: 137/137 tests passing (slices 1–14) · solc 0.8.26, optimizer 200, c
     empty civic records to the buyer (tested) — the seller's identity does not
     transfer with the name.
   * STANDARDS: EIP-137 addr, ENSIP-9 multicoin addr, EIP-634 text, EIP-1577
-    contenthash, ERC-165, ENSIP-10 resolve() — all advertised via
-    supportsInterface and dispatched on-chain by resolve().
+    contenthash, EIP-181 name (REVERSE resolution), ERC-165, ENSIP-10 resolve() —
+    all advertised via supportsInterface and dispatched on-chain by resolve().
+  * FORWARD + REVERSE: forward resolution serves names pointing here; EIP-181
+    name()/setName() let an address set its primary name on its own
+    <addr>.addr.reverse node, so the resolver works both directions.
+  * LINK BINDING: link() verifies the label genuinely belongs to the node —
+    node == keccak256(namehash("eth"), keccak256(label)) — so a .eth 2LD cannot
+    be bound to a mismatched label.
   * CCIP-READ (EIP-3668): ensplus.offchain.* text keys raise OffchainLookup to
     the gateway (guild rosters, full graphs served off-chain); small civic
     records resolve on-chain. ccipCallback returns the gateway payload (response
