@@ -31,11 +31,12 @@ export function provenanceScore(provenanceWad, rank) {
     eraPart = ((w - ERA_MIN_WAD) * ERA_PART_MAX) / (ERA_MAX_WAD - ERA_MIN_WAD);
   }
   let rankPart = 0n;
+  // canonical tiers (LibAttestation.rankTier): TOP_100 / TOP_1K / TOP_10K
   if (rank !== 0n) {
-    if (rank <= 999n) rankPart = RANK_PART_MAX;
-    else if (rank <= 9_999n) rankPart = 2_000n;
-    else if (rank <= 99_999n) rankPart = 1_000n;
-    else rankPart = 500n;
+    if (rank <= 100n) rankPart = RANK_PART_MAX;
+    else if (rank <= 1_000n) rankPart = 2_000n;
+    else if (rank <= 10_000n) rankPart = 1_000n;
+    else rankPart = 0n;
   }
   return min(eraPart + rankPart, SCALE);
 }
