@@ -1,5 +1,5 @@
 # ENSPLUS — Project Checklist
-**As of:** 2026-07-05 · **Test status:** 144/144 passing (slices 1–14 + hardening) · cross-fuzz EVM ≡ JS mirror, 0 mismatches · solc 0.8.26, zero warnings
+**As of:** 2026-07-09 · **Test status:** 146/146 passing (slices 1–14 + hardening) · cross-fuzz EVM ≡ JS mirror, 0 mismatches · solc 0.8.26, zero warnings
 
 ---
 
@@ -13,7 +13,7 @@
 - [x] `ADOPTED_IMPROVEMENTS.md` — gwei-names benchmark: verdict + what was adopted / deferred
 - [x] `README.md` — project index, decisions log, reuse map, roadmap
 
-## ✅ FINISHED — contracts (137/137 tests)
+## ✅ FINISHED — contracts (146/146 tests)
 - [x] **Slice 1 — pure libraries**: LibCategory, LibAttestation (era 0 = Prepunk real-never-sentinel), LibWeight (quadratic/cap/vesting/dormancy)
 - [x] **Slice 2 — custody core**: ENSPLUSVault (1:1 wrap, checkpoints, vesting, holderCount) + RevenueSplitter; invariants I1–I4 as 800-op randomized tests
 - [x] **Slice 3 — InternalGovernor**: commit-reveal ballots, capped tallies, outcomes, epochs, trailing-min tier ladder, Policy A/B registry
@@ -28,7 +28,7 @@
 - [x] **Slice 11 — LibTrust**: L1-native sybil-resistant reputation (provenance + tenure + participation + category + humanity); cross-fuzzed; replaces EFP trust graph
 - [x] **Slice 12 — TrustOracle**: read-only aggregator making LibTrust live against attestor/governor/namevault/renewalpool/citizen/human; boundRank persisted
 - [x] **Slice 13 — HumanAttestor**: ownerless zkPassport proof-of-humanity (one human ↔ one identity, rebindable); feeds LibTrust as sybil-proof signal
-- [x] **Slice 14 — CitizenResolver**: ownerless read-only ENS resolver; live civic records (ensplus.*); recordVersion clearing; ENSIP-10 + CCIP-read; provenance-safe on transfer
+- [x] **Slice 14 — CitizenResolver**: ownerless ENS resolver — FORWARD (addr/text/contenthash) + REVERSE (EIP-181 `name`); live civic records (ensplus.*); recordVersion clearing; ENSIP-10 + CCIP-read; label↔node binding verified; provenance-safe on transfer
 
 ## ✅ FINISHED — tooling & SDK
 - [x] `tools/efp_onchain.mjs` (+test) — EFP follows read directly from Base contracts, no hosted API; decoders verified vs EFP docs vectors
@@ -39,6 +39,9 @@
 - [x] `tools/deploy.js` — deterministic genesis deploy blueprint (same deployer+nonces ⇒ same CREATE addresses; registry prediction asserted)
 - [x] `tools/adoption_model.mjs` — wrapped-supply → governance-impact threshold model
 - [x] `tools/fuzz.js` — EVM-vs-JS cross-fuzz harness
+
+## ✅ FINISHED — front-end
+- [x] `app/ensplus_console.html` — self-contained single-file console (16 panels): Overview, **User Guide**, ENS+ Vault, Name Vault, Internal Governor, Constitution, Bloc Voice, Renewal Pool, Sentinel Lock, Watchtower, Citizen & Provenance, Reputation, Participation Credits, Civic Resolver, Follow Graph (optional), Guilds (planned preview). No build step, no CDN; status of each feature labelled honestly in-app.
 
 ## 📐 DEFERRED — post-audit / separate reviews (asset-moving, higher risk)
 - [ ] Marketplace / leasing / Subname Foundry (move assets — own audit)

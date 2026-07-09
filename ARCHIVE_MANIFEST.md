@@ -1,5 +1,5 @@
 # ENSPLUS — Complete Project Archive
-Generated: 2026-07-04 (updated: UI expanded — Follow Graph (optional EFP), Guilds (planned preview), Participation Credits panels added
+Generated: 2026-07-09 (full sync: code + tests + tools + docs + app UI, all at 146/146 passing)
 
 ## Layout
 - `README.md` — project overview, decisions log D1–D11, roadmap. Start here.
@@ -39,12 +39,12 @@ Generated: 2026-07-04 (updated: UI expanded — Follow Graph (optional EFP), Gui
 
   - docs/ENSPLUS_AUDIT_SCOPE.md — external-audit boundary: 22 contracts/~3045 SLOC in scope, deferred waves + externals out, invariants I1-I10, accepted findings, 8 focus questions. Pre-audit hardening complete — 144/144 passing
 
-  - app/ensplus_console.html — self-contained single-file front-end UI covering the full stack (16 panels incl. User Guide, Credits, Follow Graph, Guilds); no CDN, no build. See app/README.md. 146/146 tests, 22 contracts.
+  - app/ensplus_console.html — self-contained single-file front-end (16 panels incl. User Guide, Credits, Follow Graph, Guilds); no CDN, no build. See app/README.md.
 
 ## Checksums (sha256)
-69d0a489fdeaaf95955a2dd001fa4f0b004171add9faf58e95fc225ba3c9cd18  PROJECT_CHECKLIST.md
-e350f5fa3ba39a2c9591993850cc6c2e5986eb91e49401b17a354f90633a5eb9  README.md
-95026117a6379ff204428695b6188b253f557f4477e674832f7dd1f919614d2c  app/README.md
+252b3016325fc526c19d954135c1f6356cc7617f0d221110b68a7b59ce65fe68  PROJECT_CHECKLIST.md
+e0ce158272ede5370356af4265b38466a9605db2fdaf3cdd99b9e1d21d7b3abd  README.md
+1b3162a9615d4bd8132208d28aebf1d2b0f6a7aed28fe500f6392f262238a837  app/README.md
 7e6afbc2f555f0e293af0be39e6ad7afc29faa37fa021cebeecc6aec2865e9a8  app/ensplus_console.html
 825fe31b4e8d644078dffac797d3f8b9aef391cff83b27e546deaa750a4a6017  contracts/.gas-snapshot
 d7ea9bd941b7b14bce3d41de8ec543dec73637cd4c523135612e11bfb104db32  contracts/SLICE1.md
@@ -53,7 +53,7 @@ d7ea9bd941b7b14bce3d41de8ec543dec73637cd4c523135612e11bfb104db32  contracts/SLIC
 06984f6d70025f6f6821380bf3784d7eb7503e0eefaa355cb76d02a55108731a  contracts/SLICE12.md
 a3f18a8e86130d42764d7ba042888300eef518e7276b982cbd2d7c2537d83200  contracts/SLICE13.md
 2618e5e1ecedccb1b5d34a9df0ea891e6d1ae0f3dd9d273a134f43500e3785f2  contracts/SLICE14.md
-4aaa188f0a4988b9e49310920dc1eccc42f657d9a9918a0642a31d0a6ff9d75d  contracts/SLICE15_HARDENING.md
+4fd285cd62c7227c3b8256ca66ece94dc655c05be19a7d96eb5eaa71251aa559  contracts/SLICE15_HARDENING.md
 4c3748a3074df51b538e925a40f188cf8fe25dd473e752ef7ed3711b3c735653  contracts/SLICE2.md
 94f4eb0f2dc970b9cfdf70433e821c1c87c4f042008bf5c28e6c07ee44f217dd  contracts/SLICE3.md
 ba64714d676ff92dccfc2d976bbf0271f3b22a2b2ab4380aafe6e008bcb42c2e  contracts/SLICE4.md
@@ -138,9 +138,9 @@ b25b8f9c89127efd6e6b75891c9b9875146f81aa57145f7654bfe36dce28dec7  docs/DECISIONS
 abd1aef7c758e84bcb13f87225c5ee0ec09e107b9eae663a38c59e8a91780e2d  docs/ENSPLUS_AUTOPILOT_SPEC.md
 cd8f6d8bbb2f63f2a4d60ee49fcb03990200b5012f0869b3b86fc4bc8fdace79  docs/ENSPLUS_ENSV2_MIGRATION_SPEC.md
 c2a2f28ffe2a3d7b0e8a38eee20e19024cabcd337a883ea1a56dda1ca88f2dca  docs/ENSPLUS_MODULE_MANIFEST_SPEC.md
-9e5765f3e047f862e7b258d54f7adaa12278bcee328105d43f5e8c04b8aae4fe  docs/ENSPLUS_OVERVIEW.md
+c0c5e6731b368b8feae21f084691f7959f2cc2b7ce9d1c396f8420fbd85cb2cd  docs/ENSPLUS_OVERVIEW.md
 0de8d5e0d3a4d87ea0f6365c220920cf30c0277ea7254f4c0a13a5662f453ade  docs/ENSPLUS_SOCIAL_MODULE_CHARTER.md
-a3e086f9a0e6494ff3b3a81c8f0c6fe89419cf9b5262720ea68d05104e21c1fc  docs/ENSPLUS_THREAT_MODEL.md
+1b2bfd2b0cf531b2b22ad07afcfa7c280a15b955ac483172a2ff65995ef9f611  docs/ENSPLUS_THREAT_MODEL.md
 8d3528a4aa06184fb84688a6c876757254af6289f33b538bb4221a839940d9e7  docs/FROZEN_DERIVATION_SPEC.md
 41e10db096a912adb5c6fa50c6179e42427ec76c894cf44e98e21e8c49fe7849  tools/efp_trustgraph.mjs
 6fcf60ee1ef75ae6d54709f5e1a9846ee6fc4b888cd80259a8439233a678dc07  tools/eik_profile.mjs

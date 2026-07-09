@@ -1,6 +1,6 @@
 # ENSPLUS — Project README
 
-**Status:** Core code-complete for audit scope — 137/137 tests, 22 contracts (slices 1–14) · **Last updated:** 2026-07-05
+**Status:** Core code-complete for audit scope — 146/146 tests, 22 contracts (slices 1–14 + hardening) · **Last updated:** 2026-07-09
 **Entity:** CollectibleTrust DAO, LLC · **Working title:** ENSPLUS
 
 ---
@@ -24,6 +24,7 @@ Design DNA: immutable contracts, no admin keys, covenants enforced in bytecode, 
 | `ENSPLUS_THREAT_MODEL.md` | 14 adversaries, ~45 threats across 8 domains with strength classes (HARD/STRONG/ECONOMIC/POLITICAL/PROCEDURAL), invariants I1–I10 (audit scope), claims register (§11 — what marketing may say) |
 | `ENSPLUS_MODULE_MANIFEST_SPEC.md` | The charter format: lifecycle, schema (§2.1–2.8), permission taxonomy (P-READ..P-EXT + forfeiture set), tier-gated ratification, registry machine checks, renewal-pool worked example, four-document concordance |
 | `ENSPLUS_SOCIAL_MODULE_CHARTER.md` | First complete charter instance: social module v1 (EFP/EIK, P-READ only, pure Tier-0, two-key trust-score activation) |
+| `app/ensplus_console.html` | The front-end console: a self-contained single-file dApp (16 panels) covering the full stack, incl. an in-app User Guide. No build, no CDN. See `app/README.md` |
 | `ENSPLUS_AUDIT_SCOPE.md` | The external-audit boundary: 22 in-scope contracts (~3,045 SLOC), what's out and why, security model, invariants I1–I10, accepted findings, and the 8 questions we most want answered |
 | `DECISIONS_RESOLVED.md` / `FROZEN_DERIVATION_SPEC.md` | The four resolved code-affecting decisions + the frozen era/rank derivation rules |
 | `ADOPTED_IMPROVEMENTS.md` | gwei-names benchmark: verdict on ownerless/robustness/features + what was adopted (HumanAttestor, SDK, gas snapshots, deterministic deploy) and deliberately deferred |
