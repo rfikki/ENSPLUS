@@ -1,6 +1,6 @@
 # ENSPLUS — Pre-audit Hardening (Slice 15, ongoing)
 
-Verified: 144/144 tests passing · solc 0.8.26, zero warnings.
+Verified: 146/146 tests passing · solc 0.8.26, zero warnings.
 
 ## What this is
 Pre-audit hardening: raising the newer custody-adjacent contracts to the same
