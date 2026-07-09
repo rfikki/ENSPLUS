@@ -1,6 +1,6 @@
 # ENSPLUS — Formal Threat Model (Draft 1)
 
-**Status:** IMPLEMENTED — invariants I1–I10 are executable tests; 137/137 passing across 22 contracts (slices 1–14). Threats/strength-classes/claims-register remain the audit reference. · **Date:** 2026-07-03 (status updated 2026-07-05)
+**Status:** IMPLEMENTED — invariants I1–I10 are executable tests; 146/146 passing across 22 contracts (slices 1–14 + hardening). Threats/strength-classes/claims-register remain the audit reference. · **Date:** 2026-07-03 (status updated 2026-07-05)
 **Purpose:** Every guarantee ENSPLUS states publicly must have a written basis here, with a strength class attached. This document is also the seed of the audit scope: §10's invariants are the properties external auditors and fuzzing campaigns should target.
 
 ---
